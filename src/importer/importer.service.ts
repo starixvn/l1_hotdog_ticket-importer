@@ -31,11 +31,8 @@ export class ImporterService {
             // Transform tickets to API format
             const transformedTickets = this.dataTransformerService.transformTickets(tickets);
 
-            // Send tickets in batches
-            await this.sendTicketsInBatches(transformedTickets);
-
-            // Update last processed time
-            await this.ticketService.updateLastProcessedTime();
+            // Send tickets in batches (updates last processed time after each batch)
+            await this.sendTicketsInBatches(transformedTickets, tickets);
 
             this.logger.log('Ticket import process completed successfully');
         } catch (error) {
@@ -43,27 +40,39 @@ export class ImporterService {
         }
     }
 
-    private async sendTicketsInBatches(tickets: any[]): Promise<void> {
+    private async sendTicketsInBatches(transformedTickets: any[], originalTickets: any[]): Promise<void> {
         const batchSize = parseInt(process.env.BATCH_SIZE || '100');
         const delayMs = parseInt(process.env.REQUEST_DELAY_MS || '10000');
 
-        for (let i = 0; i < tickets.length; i += batchSize) {
-            const batch = tickets.slice(i, i + batchSize);
+        for (let i = 0; i < transformedTickets.length; i += batchSize) {
+            const batch = transformedTickets.slice(i, i + batchSize);
+            const originalBatch = originalTickets.slice(i, i + batchSize);
 
             this.logger.log(
-                `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(tickets.length / batchSize)} with ${batch.length} tickets`,
+                `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(transformedTickets.length / batchSize)} with ${batch.length} tickets`,
             );
 
             try {
                 await this.apiClientService.sendTickets(batch);
                 this.logger.log(`Successfully sent batch ${Math.floor(i / batchSize) + 1}`);
+
+                // Find the latest ticket time from this batch
+                const latestTicketTime = originalBatch.reduce((latest, ticket) => {
+                    return ticket.time > latest ? ticket.time : latest;
+                }, originalBatch[0].time);
+
+                // Update processed tickets with original ticket data
+                await this.ticketService.updateLastProcessed(latestTicketTime, originalBatch);
+                this.logger.log(
+                    `Updated processed tickets after batch ${Math.floor(i / batchSize) + 1} to: ${latestTicketTime} with ${originalBatch.length} processed tickets`,
+                );
             } catch (error) {
                 this.logger.error(`Failed to send batch ${Math.floor(i / batchSize) + 1}:`, error);
                 // Continue with next batch even if one fails
             }
 
             // Wait between requests (except for the last batch)
-            if (i + batchSize < tickets.length) {
+            if (i + batchSize < transformedTickets.length) {
                 this.logger.log(`Waiting ${delayMs}ms before next request...`);
                 await this.delay(delayMs);
             }

@@ -39,6 +39,7 @@ BATCH_SIZE=100
 REQUEST_DELAY_MS=10000
 MAX_RETRY_ATTEMPTS=5
 RETRY_BASE_DELAY_MS=1000
+OPERATOR_ID=ONEworksVGCash
 
 # Application Configuration
 PORT=3000
@@ -61,37 +62,38 @@ The service transforms MongoDB tickets to the following API format:
 
 ```json
 {
-  "Timestamp": "2023-10-06T09:34:26.966Z",
-  "Seq": "string",
-  "Payload": {
-    "Tickets": [
-      {
-        "GameId": "1001",
-        "CustId": "118213672",
-        "CustName": "blph1lgind",
-        "GameRoundId": "3010800",
-        "TransDate": "2024-03-27T03:45:46.000Z",
-        "SettleDate": "2024-03-27T03:46:46.000Z",
-        "Stake": 100.0000,
-        "ActualStake": 100.0000,
-        "NetStake": 100.0000,
-        "Payout": 197.0000,
-        "Status": 1,
-        "CurrencyIso": "INR",
-        "JackpotContributionAmount": 10.0000
-      }
-    ]
-  }
+    "Timestamp": "2023-10-06T09:34:26.966Z",
+    "Seq": "string",
+    "Payload": {
+        "Tickets": [
+            {
+                "GameId": "1001",
+                "CustId": "118213672",
+                "CustName": "blph1lgind",
+                "GameRoundId": "3010800",
+                "TransDate": "2024-03-27T03:45:46.000Z",
+                "SettleDate": "2024-03-27T03:46:46.000Z",
+                "Stake": 100.0,
+                "ActualStake": 100.0,
+                "NetStake": 100.0,
+                "Payout": 197.0,
+                "Status": 1,
+                "CurrencyIso": "INR",
+                "JackpotContributionAmount": 10.0
+            }
+        ]
+    }
 }
 ```
 
 ## Data Processing Logic
 
 1. **Time Range**: Queries tickets from the last processed time to current time minus 10 minutes
-2. **Batch Size**: Processes tickets in configurable batches (default: 100)
-3. **Rate Limiting**: Waits 10 seconds between requests (configurable)
-4. **Retry Logic**: Uses exponential backoff for failed requests
-5. **Status Mapping**: Maps win/loss data to appropriate status codes (1: Win, 2: Lose, 3: Draw)
+2. **Operator Filter**: Filters tickets by operatorId (configurable via OPERATOR_ID environment variable, default: ONEworksVGCash)
+3. **Batch Size**: Processes tickets in configurable batches (default: 100)
+4. **Rate Limiting**: Waits 10 seconds between requests (configurable)
+5. **Retry Logic**: Uses exponential backoff for failed requests
+6. **Status Mapping**: Maps win/loss data to appropriate status codes (1: Win, 2: Lose, 3: Draw)
 
 ## Monitoring
 
@@ -145,7 +147,3 @@ The service implements robust error handling:
 - **Rate Limiting**: Prevents overwhelming the target API
 - **Connection Pooling**: Efficient MongoDB connection management
 - **Memory Management**: Processes large datasets without memory issues
-
-
-
-

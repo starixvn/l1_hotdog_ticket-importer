@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { TicketSilo, TicketSiloDocument } from '../database/schemas/ticket-silo.schema';
-import { LastProcessedTime, LastProcessedTimeDocument } from '../database/schemas/last-processed-time.schema';
+import { ProcessedBatch, ProcessedBatchDocument } from '../database/schemas/ticket_importer_last_processed';
 
 @Injectable()
 export class HealthService {
@@ -10,7 +10,7 @@ export class HealthService {
 
     constructor(
         @InjectModel(TicketSilo.name) private ticketSiloModel: Model<TicketSiloDocument>,
-        @InjectModel(LastProcessedTime.name) private lastProcessedTimeModel: Model<LastProcessedTimeDocument>,
+        @InjectModel(ProcessedBatch.name) private processedBatchModel: Model<ProcessedBatchDocument>,
     ) {}
 
     async getHealthStatus() {
@@ -48,7 +48,7 @@ export class HealthService {
 
             // Get collection stats
             const ticketCount = await this.ticketSiloModel.countDocuments();
-            const lastProcessed = await this.lastProcessedTimeModel.findOne({ key: 'ticket_importer' });
+            const lastProcessed = await this.processedBatchModel.findOne({}, {}, { sort: { ticketTime: -1 } });
 
             // Get recent tickets count (last 24 hours)
             const yesterday = new Date();
@@ -71,8 +71,10 @@ export class HealthService {
                 },
                 lastProcessed: lastProcessed
                     ? {
-                          time: lastProcessed.lastProcessedTime,
-                          updatedAt: lastProcessed.updatedAt,
+                          time: lastProcessed.ticketTime,
+                          batchId: lastProcessed.batchId,
+                          batchSize: lastProcessed.batchSize,
+                          createdAt: lastProcessed.createdAt,
                       }
                     : null,
                 memory: {

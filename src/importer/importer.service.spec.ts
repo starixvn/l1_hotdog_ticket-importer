@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { ImporterService } from './importer.service';
 import { TicketService } from '../ticket/ticket.service';
 import { ApiClientService } from './api-client.service';
@@ -73,7 +74,7 @@ describe('ImporterService', () => {
                     provide: TicketService,
                     useValue: {
                         getTicketsFromLastProcessed: jest.fn(),
-                        updateLastProcessedTime: jest.fn(),
+                        updateLastProcessed: jest.fn(),
                     },
                 },
                 {
@@ -86,6 +87,15 @@ describe('ImporterService', () => {
                     provide: DataTransformerService,
                     useValue: {
                         transformTickets: jest.fn(),
+                    },
+                },
+                {
+                    provide: ConfigService,
+                    useValue: {
+                        get: jest.fn((key: string) => {
+                            if (key === 'importer.operatorId') return 'ONEworksVGCash';
+                            return undefined;
+                        }),
                     },
                 },
             ],
@@ -124,14 +134,14 @@ describe('ImporterService', () => {
         jest.spyOn(ticketService, 'getTicketsFromLastProcessed').mockResolvedValue(mockTickets);
         jest.spyOn(dataTransformerService, 'transformTickets').mockReturnValue(mockTransformedTickets);
         jest.spyOn(apiClientService, 'sendTickets').mockResolvedValue(undefined);
-        jest.spyOn(ticketService, 'updateLastProcessedTime').mockResolvedValue(undefined);
+        jest.spyOn(ticketService, 'updateLastProcessed').mockResolvedValue(undefined);
 
         await service.processTickets();
 
         expect(ticketService.getTicketsFromLastProcessed).toHaveBeenCalled();
         expect(dataTransformerService.transformTickets).toHaveBeenCalledWith(mockTickets);
         expect(apiClientService.sendTickets).toHaveBeenCalledWith(mockTransformedTickets);
-        expect(ticketService.updateLastProcessedTime).toHaveBeenCalled();
+        expect(ticketService.updateLastProcessed).toHaveBeenCalled();
     });
 
     it('should handle empty tickets gracefully', async () => {
@@ -142,7 +152,7 @@ describe('ImporterService', () => {
         expect(ticketService.getTicketsFromLastProcessed).toHaveBeenCalled();
         expect(dataTransformerService.transformTickets).not.toHaveBeenCalled();
         expect(apiClientService.sendTickets).not.toHaveBeenCalled();
-        expect(ticketService.updateLastProcessedTime).not.toHaveBeenCalled();
+        expect(ticketService.updateLastProcessed).not.toHaveBeenCalled();
     });
 
     it('should handle errors gracefully', async () => {

@@ -8,12 +8,14 @@ import { TicketModule } from './ticket/ticket.module';
 import { ImporterModule } from './importer/importer.module';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
+import configuration from './config/configuration';
 
 @Module({
     imports: [
         ConfigModule.forRoot({
             isGlobal: true,
             envFilePath: '.env',
+            load: [configuration],
         }),
         MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://localhost:27017/ticket_importer'),
         ScheduleModule.forRoot(),

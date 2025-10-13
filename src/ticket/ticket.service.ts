@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { ConfigService } from '@nestjs/config';
 import { Model } from 'mongoose';
 import { TicketSilo, TicketSiloDocument } from '../database/schemas/ticket-silo.schema';
-import { LastProcessedTime, LastProcessedTimeDocument } from '../database/schemas/last-processed-time.schema';
+import { ProcessedBatch, ProcessedBatchDocument } from '../database/schemas/ticket_importer_last_processed';
 import * as moment from 'moment';
 
 @Injectable()
@@ -11,18 +12,35 @@ export class TicketService {
 
     constructor(
         @InjectModel(TicketSilo.name) private ticketSiloModel: Model<TicketSiloDocument>,
-        @InjectModel(LastProcessedTime.name) private lastProcessedTimeModel: Model<LastProcessedTimeDocument>,
+        @InjectModel(ProcessedBatch.name) private processedBatchModel: Model<ProcessedBatchDocument>,
+        private configService: ConfigService,
     ) {}
 
     async getTicketsFromLastProcessed(): Promise<TicketSilo[]> {
         try {
             // Get the last processed time
             const lastProcessed = await this.getLastProcessedTime();
-            
+
             // Calculate the end time (current time - 10 minutes)
             const endTime = moment().subtract(10, 'minutes').toDate();
-            
-            this.logger.log(`Querying tickets from ${lastProcessed} to ${endTime}`);
+
+            // Get operatorId from configuration
+            const operatorId = this.configService.get<string>('importer.operatorId') || process.env.OPERATOR_ID || 'ONEworksVGCash';
+
+            // Debug: Log all configuration values
+            this.logger.debug(`Configuration values:`, {
+                operatorId,
+                allImporterConfig: this.configService.get('importer'),
+                envOperatorId: process.env.OPERATOR_ID,
+            });
+
+            // Get all processed ticket IDs from all batches
+            const processedBatches = await this.processedBatchModel.find({}, 'ticketIds').lean();
+            const processedTicketIds = processedBatches.flatMap((batch) => batch.ticketIds);
+
+            this.logger.log(
+                `Querying tickets from ${lastProcessed} to ${endTime} for operatorId: ${operatorId}, excluding ${processedTicketIds.length} already processed tickets`,
+            );
 
             const tickets = await this.ticketSiloModel
                 .find({
@@ -30,11 +48,21 @@ export class TicketService {
                         $gt: lastProcessed,
                         $lte: endTime,
                     },
+                    operatorId: operatorId,
+                    // Exclude already processed tickets
+                    $expr: {
+                        $not: {
+                            $in: [
+                                { $concat: ['$playerId', '_', { $toString: '$gameId' }, '_', { $toString: '$roundId' }] },
+                                processedTicketIds,
+                            ],
+                        },
+                    },
                 })
                 .sort({ time: 1 })
                 .lean();
 
-            this.logger.log(`Found ${tickets.length} tickets to process`);
+            this.logger.log(`Found ${tickets.length} tickets to process for operatorId: ${operatorId}`);
             return tickets;
         } catch (error) {
             this.logger.error('Error fetching tickets:', error);
@@ -42,46 +70,47 @@ export class TicketService {
         }
     }
 
-    async updateLastProcessedTime(): Promise<void> {
+    async updateLastProcessed(time: Date, tickets: TicketSilo[]): Promise<void> {
         try {
-            const currentTime = moment().subtract(10, 'minutes').toDate();
-            
-            await this.lastProcessedTimeModel.findOneAndUpdate(
-                { key: 'ticket_importer' },
-                { 
-                    lastProcessedTime: currentTime,
-                    updatedAt: new Date(),
-                },
-                { upsert: true, new: true }
-            );
+            // Generate ticket IDs for this batch
+            const ticketIds = tickets.map((ticket) => `${ticket.playerId}_${ticket.gameId}_${ticket.roundId}`);
 
-            this.logger.log(`Updated last processed time to ${currentTime}`);
+            // Create a processed batch record
+            const batchId = `batch_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            const processedBatch = {
+                batchId,
+                ticketIds,
+                ticketTime: time,
+                batchSize: tickets.length,
+            };
+
+            // Insert the processed batch record
+            await this.processedBatchModel.create(processedBatch);
+
+            this.logger.log(`Added processed batch ${batchId} with ${tickets.length} tickets`);
         } catch (error) {
-            this.logger.error('Error updating last processed time:', error);
+            this.logger.error('Error updating processed batch:', error);
             throw error;
         }
     }
 
     private async getLastProcessedTime(): Promise<Date> {
         try {
-            const lastProcessed = await this.lastProcessedTimeModel.findOne({ key: 'ticket_importer' });
-            
-            if (!lastProcessed) {
-                // If no last processed time exists, start from 24 hours ago
-                const defaultTime = moment().subtract(24, 'hours').toDate();
-                this.logger.log(`No last processed time found, using default: ${defaultTime}`);
+            // Get the latest processed batch time
+            const latestProcessed = await this.processedBatchModel.findOne({}, {}, { sort: { ticketTime: -1 } }).lean();
+
+            if (!latestProcessed) {
+                // If no processed batches exist, start from 10 days ago
+                const defaultTime = moment().subtract(10, 'days').toDate();
+                this.logger.log(`No processed batches found, using default: ${defaultTime}`);
                 return defaultTime;
             }
 
-            return lastProcessed.lastProcessedTime;
+            return latestProcessed.ticketTime;
         } catch (error) {
             this.logger.error('Error getting last processed time:', error);
             // Return a default time if there's an error
-            return moment().subtract(24, 'hours').toDate();
+            return moment().subtract(10, 'days').toDate();
         }
     }
 }
-
-
-
-
