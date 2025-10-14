@@ -8,7 +8,7 @@ export default () => ({
 
     api: {
         baseUrl: process.env.API_BASE_URL || 'https://api.example.com',
-        operatorPwd: process.env.API_OPERATOR_PWD || '',
+        operatorPwd: process.env.API_OPERATOR_PWD || 'rmt727hm',
         operatorSign: process.env.API_OPERATOR_SIGN || '',
     },
 
@@ -22,5 +22,12 @@ export default () => ({
 
     logging: {
         level: process.env.LOG_LEVEL || 'info',
+    },
+
+    sentry: {
+        dsn: process.env.SENTRY_DSN,
+        environment: process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development',
+        release: process.env.SENTRY_RELEASE || '1.0.0',
+        enabled: !!process.env.SENTRY_DSN,
     },
 });

@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { Model } from 'mongoose';
 import { TicketSilo, TicketSiloDocument } from '../database/schemas/ticket-silo.schema';
 import { ProcessedBatch, ProcessedBatchDocument } from '../database/schemas/ticket_importer_last_processed';
+import { SentryService } from '../common/services/sentry.service';
 import * as moment from 'moment';
 
 @Injectable()
@@ -14,12 +15,14 @@ export class TicketService {
         @InjectModel(TicketSilo.name) private ticketSiloModel: Model<TicketSiloDocument>,
         @InjectModel(ProcessedBatch.name) private processedBatchModel: Model<ProcessedBatchDocument>,
         private configService: ConfigService,
+        private sentryService: SentryService,
     ) {}
 
     async getTicketsFromLastProcessed(): Promise<TicketSilo[]> {
+        let lastProcessed: Date;
         try {
             // Get the last processed time
-            const lastProcessed = await this.getLastProcessedTime();
+            lastProcessed = await this.getLastProcessedTime();
 
             // Calculate the end time (current time - 10 minutes)
             const endTime = moment().subtract(10, 'minutes').toDate();
@@ -66,6 +69,12 @@ export class TicketService {
             return tickets;
         } catch (error) {
             this.logger.error('Error fetching tickets:', error);
+            // Capture error with Sentry for monitoring
+            this.sentryService.captureException(error, {
+                method: 'getTicketsFromLastProcessed',
+                operatorId: this.configService.get<string>('importer.operatorId'),
+                lastProcessed: lastProcessed?.toISOString(),
+            });
             throw error;
         }
     }

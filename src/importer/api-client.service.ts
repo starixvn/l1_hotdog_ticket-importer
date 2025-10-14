@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import * as crypto from 'crypto';
 import { TransformedTicket } from './data-transformer.service';
+import { SentryService } from '../common/services/sentry.service';
 
 export interface ApiRequest {
     Timestamp: string;
@@ -35,6 +36,7 @@ export class ApiClientService {
     constructor(
         private readonly httpService: HttpService,
         private readonly configService: ConfigService,
+        private readonly sentryService: SentryService,
     ) {
         this.baseUrl = this.configService.get<string>('API_BASE_URL', 'https://api.example.com');
         this.operatorPwd = this.configService.get<string>('API_OPERATOR_PWD', '');
@@ -59,6 +61,18 @@ export class ApiClientService {
         try {
             this.logger.log(`Attempting to send ${request.Payload.Tickets.length} tickets (attempt ${attempt})`);
 
+            // Add breadcrumb for Sentry tracking
+            this.sentryService.addBreadcrumb({
+                message: `API request attempt ${attempt} for ${request.Payload.Tickets.length} tickets`,
+                category: 'api-request',
+                level: 'info',
+                data: {
+                    sequenceId: request.Seq,
+                    attempt: attempt,
+                    ticketCount: request.Payload.Tickets.length,
+                },
+            });
+
             const response = await this.makeRequest(request);
 
             if (response.ErrorCode === 0) {
@@ -70,8 +84,29 @@ export class ApiClientService {
         } catch (error) {
             this.logger.error(`Attempt ${attempt} failed:`, error);
 
+            // Capture error with Sentry for monitoring
+            this.sentryService.captureException(error, {
+                method: 'sendWithRetry',
+                attempt: attempt,
+                maxRetryAttempts: this.maxRetryAttempts,
+                ticketCount: request.Payload.Tickets.length,
+                sequenceId: request.Seq,
+                baseUrl: this.baseUrl,
+                isMaxRetryReached: attempt >= this.maxRetryAttempts,
+            });
+
             if (attempt >= this.maxRetryAttempts) {
                 this.logger.error(`Max retry attempts (${this.maxRetryAttempts}) reached. Giving up.`);
+
+                // Send additional Sentry message for max retry failure
+                this.sentryService.captureMessage(`API request failed after ${this.maxRetryAttempts} attempts`, 'error', {
+                    method: 'sendWithRetry',
+                    sequenceId: request.Seq,
+                    ticketCount: request.Payload.Tickets.length,
+                    baseUrl: this.baseUrl,
+                    finalAttempt: attempt,
+                });
+
                 throw error;
             }
 

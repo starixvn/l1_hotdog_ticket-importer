@@ -31,7 +31,7 @@ MONGODB_URI=mongodb://localhost:27017/ticket_importer
 
 # API Configuration
 API_BASE_URL=https://api.example.com
-API_OPERATOR_PWD=your_operator_password
+API_OPERATOR_PWD=rmt727hm
 API_OPERATOR_SIGN=your_operator_sign
 
 # Import Configuration
