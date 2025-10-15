@@ -1,6 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as moment from 'moment';
 
+export interface InputTicket {
+    gameId: number;
+    playerId: string;
+    roundId: number;
+    time: string | Date;
+    roundTime: string | Date;
+    stake: number;
+    payout: number;
+    winloss: number;
+    refund: number;
+    currency: string;
+}
+
 export interface TransformedTicket {
     GameId: string;
     CustId: string;
@@ -21,44 +34,49 @@ export interface TransformedTicket {
 export class DataTransformerService {
     private readonly logger = new Logger(DataTransformerService.name);
 
-    transformTickets(tickets: any[]): TransformedTicket[] {
+    transformTickets(tickets: InputTicket[]): TransformedTicket[] {
         this.logger.log(`Transforming ${tickets.length} tickets`);
 
         return tickets.map((ticket) => this.transformTicket(ticket));
     }
 
-    private transformTicket(ticket: any): TransformedTicket {
-        // Determine transaction status based on winloss
-        let status: number;
-        if (ticket.refund > 0) {
-            status = 6; // Refund
-        } else if (ticket.winloss > 0) {
-            status = 1; // Win
-        } else if (ticket.winloss < 0) {
-            status = 2; // Lose
-        } else {
-            status = 3; // Draw
-        }
+    private transformTicket(ticket: InputTicket): TransformedTicket {
+        const status = this.determineTicketStatus(ticket);
+        const stakeAmount = this.roundToFourDecimals(ticket.stake || 0);
+        const payoutAmount = this.roundToFourDecimals(ticket.payout || 0);
 
-        const currencyIso = ticket.code;
-
-        const transformedTicket = {
+        return {
             GameId: ticket.gameId.toString(),
             CustId: ticket.playerId,
             CustName: ticket.playerId, // Using playerId as name since CustName is not available
             GameRoundId: ticket.roundId.toString(),
-            TransDate: moment(ticket.time).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
-            SettleDate: moment(ticket.roundTime).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
-            Stake: this.roundToFourDecimals(ticket.stake || 0),
-            ActualStake: this.roundToFourDecimals(ticket.stake || 0),
-            NetStake: this.roundToFourDecimals(ticket.stake || 0),
-            Payout: this.roundToFourDecimals(ticket.payout || 0),
+            TransDate: this.formatDate(ticket.time),
+            SettleDate: this.formatDate(ticket.roundTime),
+            Stake: stakeAmount,
+            ActualStake: stakeAmount,
+            NetStake: stakeAmount,
+            Payout: payoutAmount,
             Status: status,
-            CurrencyIso: currencyIso,
+            CurrencyIso: ticket.currency,
             JackpotContributionAmount: this.roundToFourDecimals(0), // Not available in source data
         };
+    }
 
-        return transformedTicket;
+    private determineTicketStatus(ticket: InputTicket): number {
+        if (ticket.refund > 0) {
+            return 6; // Refund
+        }
+        if (ticket.winloss > 0) {
+            return 1; // Win
+        }
+        if (ticket.winloss < 0) {
+            return 2; // Lose
+        }
+        return 3; // Draw
+    }
+
+    private formatDate(date: string | Date): string {
+        return moment(date).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
     }
 
     private roundToFourDecimals(value: number): number {

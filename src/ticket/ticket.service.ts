@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
 import { Model } from 'mongoose';
 import { TicketSilo, TicketSiloDocument } from '../database/schemas/ticket-silo.schema';
-import { ProcessedBatch, ProcessedBatchDocument } from '../database/schemas/ticket_importer_last_processed';
+import { ProcessedBatch, ProcessedBatchDocument } from '../database/schemas/ticket-importer-last-processed';
 import { SentryService } from '../common/services/sentry.service';
 import * as moment from 'moment';
 

@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { TicketSilo, TicketSiloDocument } from '../database/schemas/ticket-silo.schema';
-import { ProcessedBatch, ProcessedBatchDocument } from '../database/schemas/ticket_importer_last_processed';
+import { ProcessedBatch, ProcessedBatchDocument } from '../database/schemas/ticket-importer-last-processed';
 
 @Injectable()
 export class HealthService {

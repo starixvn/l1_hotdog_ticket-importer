@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TicketSilo, TicketSiloSchema } from './schemas/ticket-silo.schema';
-import { ProcessedBatch, ProcessedBatchSchema } from './schemas/ticket_importer_last_processed';
+import { ProcessedBatch, ProcessedBatchSchema } from './schemas/ticket-importer-last-processed';
 
 @Module({
     imports: [
