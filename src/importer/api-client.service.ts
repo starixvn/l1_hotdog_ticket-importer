@@ -14,6 +14,8 @@ export interface ApiRequest {
     };
     _storedAt?: string;
     _headers?: any;
+    _response?: any;
+    _error?: any;
 }
 
 export interface ApiResponse {
@@ -28,7 +30,7 @@ export class ApiClientService {
     private readonly logger = new Logger(ApiClientService.name);
     private readonly baseUrl: string;
     private readonly operatorPwd: string;
-    private readonly operatorSign: string;
+    private readonly operatorKey: string;
     private readonly maxRetryAttempts: number;
     private readonly retryBaseDelay: number;
     private readonly storedRequests: ApiRequest[] = [];
@@ -38,11 +40,11 @@ export class ApiClientService {
         private readonly configService: ConfigService,
         private readonly sentryService: SentryService,
     ) {
-        this.baseUrl = this.configService.get<string>('API_BASE_URL', 'https://api.example.com');
-        this.operatorPwd = this.configService.get<string>('API_OPERATOR_PWD', '');
-        this.operatorSign = this.configService.get<string>('API_OPERATOR_SIGN', '');
-        this.maxRetryAttempts = parseInt(this.configService.get<string>('MAX_RETRY_ATTEMPTS', '5'));
-        this.retryBaseDelay = parseInt(this.configService.get<string>('RETRY_BASE_DELAY_MS', '1000'));
+        this.baseUrl = this.configService.get<string>('api.baseUrl', 'https://api.example.com');
+        this.operatorPwd = this.configService.get<string>('api.operatorPwd', '');
+        this.operatorKey = this.configService.get<string>('api.operatorKey', '');
+        this.maxRetryAttempts = this.configService.get<number>('importer.maxRetryAttempts', 5);
+        this.retryBaseDelay = this.configService.get<number>('importer.retryBaseDelayMs', 1000);
     }
 
     async sendTickets(tickets: TransformedTicket[]): Promise<void> {
@@ -121,34 +123,83 @@ export class ApiClientService {
 
     private async makeRequest(request: ApiRequest): Promise<ApiResponse> {
         const body = JSON.stringify(request);
-        const bodyMd5 = crypto.createHash('md5').update(body).digest('hex');
+        // Calculate operator-sign using the formula: MD5(body + operatorKey)
+        const operatorSign = crypto
+            .createHash('md5')
+            .update(body + this.operatorKey)
+            .digest('hex');
 
         const headers = {
             'Content-Type': 'application/json',
             'operator-pwd': this.operatorPwd,
-            'operator-sign': bodyMd5,
+            'operator-sign': operatorSign,
         };
 
-        this.logger.log(`Storing request in memory instead of sending to ${this.baseUrl}/inbox`);
+        const apiEndpoint = `${this.baseUrl}/api/OperatorApi/ImportExtTicket`;
+        this.logger.log(`Sending request to ${apiEndpoint}`);
         this.logger.debug(`Request headers:`, headers);
         this.logger.debug(`Request body:`, body);
 
-        // Store request in memory instead of making HTTP call
-        this.storedRequests.push({
-            ...request,
-            _storedAt: new Date().toISOString(),
-            _headers: headers,
-        });
+        try {
+            this.logger.log(`Making HTTP POST request to: ${apiEndpoint}`);
 
-        this.logger.log(`Request stored in memory. Total stored requests: ${this.storedRequests.length}`);
+            const response = await firstValueFrom(
+                this.httpService.post(apiEndpoint, body, {
+                    headers,
+                    timeout: 30000, // 30 second timeout
+                }),
+            );
 
-        // Return a mock successful response
-        return {
-            Timestamp: new Date().toISOString(),
-            Seq: request.Seq,
-            ErrorCode: 0,
-            ErrorMessage: 'Success (stored in memory)',
-        };
+            this.logger.log(`API response received: ${response.status} ${response.statusText}`);
+            this.logger.debug(`Response data:`, response.data);
+
+            // Validate response structure
+            if (!response.data || typeof response.data !== 'object') {
+                throw new Error('Invalid response format from API');
+            }
+
+            // Store successful request for reference
+            this.storedRequests.push({
+                ...request,
+                _storedAt: new Date().toISOString(),
+                _headers: headers,
+                _response: response.data,
+            });
+
+            this.logger.log(`Request sent successfully. Total stored requests: ${this.storedRequests.length}`);
+
+            // Return the API response
+            return response.data as ApiResponse;
+        } catch (error) {
+            this.logger.error(`HTTP request failed:`, error);
+
+            // Enhanced error information
+            const errorInfo = {
+                message: error.message,
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                data: error.response?.data,
+                code: error.code,
+                timeout: error.timeout,
+            };
+
+            this.logger.error(`Error details:`, errorInfo);
+
+            // Store failed request for debugging
+            this.storedRequests.push({
+                ...request,
+                _storedAt: new Date().toISOString(),
+                _headers: headers,
+                _error: errorInfo,
+            });
+
+            // Create a more descriptive error for retry logic
+            const enhancedError = new Error(`API request failed: ${error.message} (Status: ${error.response?.status || 'Unknown'})`);
+            enhancedError.stack = error.stack;
+
+            // Re-throw the enhanced error to be handled by the retry logic
+            throw enhancedError;
+        }
     }
 
     private generateSequenceId(): string {
@@ -179,5 +230,27 @@ export class ApiClientService {
     clearStoredRequests(): void {
         this.storedRequests.length = 0;
         this.logger.log('All stored requests cleared from memory');
+    }
+
+    /**
+     * Get request statistics for monitoring
+     */
+    getRequestStatistics(): {
+        total: number;
+        successful: number;
+        failed: number;
+        successRate: number;
+    } {
+        const total = this.storedRequests.length;
+        const successful = this.storedRequests.filter((req) => req._response && !req._error).length;
+        const failed = this.storedRequests.filter((req) => req._error).length;
+        const successRate = total > 0 ? (successful / total) * 100 : 0;
+
+        return {
+            total,
+            successful,
+            failed,
+            successRate: Math.round(successRate * 100) / 100,
+        };
     }
 }

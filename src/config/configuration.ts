@@ -9,7 +9,7 @@ export default () => ({
     api: {
         baseUrl: process.env.API_BASE_URL || 'https://api.example.com',
         operatorPwd: process.env.API_OPERATOR_PWD || 'rmt727hm',
-        operatorSign: process.env.API_OPERATOR_SIGN || '',
+        operatorKey: process.env.API_OPERATOR_KEY || '',
     },
 
     importer: {

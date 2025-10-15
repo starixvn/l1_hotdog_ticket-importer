@@ -23,14 +23,16 @@ export class DataTransformerService {
 
     transformTickets(tickets: any[]): TransformedTicket[] {
         this.logger.log(`Transforming ${tickets.length} tickets`);
-        
-        return tickets.map(ticket => this.transformTicket(ticket));
+
+        return tickets.map((ticket) => this.transformTicket(ticket));
     }
 
     private transformTicket(ticket: any): TransformedTicket {
         // Determine transaction status based on winloss
         let status: number;
-        if (ticket.winloss > 0) {
+        if (ticket.refund > 0) {
+            status = 6; // Refund
+        } else if (ticket.winloss > 0) {
             status = 1; // Win
         } else if (ticket.winloss < 0) {
             status = 2; // Lose
@@ -38,45 +40,28 @@ export class DataTransformerService {
             status = 3; // Draw
         }
 
-        // Use the appropriate currency data (USD or VND based on the ticket's currency)
-        const currencyData = ticket.USD || ticket.VND || {};
-        const currencyIso = this.getCurrencyIso(ticket.code);
+        const currencyIso = ticket.code;
 
-        return {
+        const transformedTicket = {
             GameId: ticket.gameId.toString(),
             CustId: ticket.playerId,
             CustName: ticket.playerId, // Using playerId as name since CustName is not available
             GameRoundId: ticket.roundId.toString(),
             TransDate: moment(ticket.time).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
             SettleDate: moment(ticket.roundTime).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
-            Stake: this.roundToFourDecimals(currencyData.stake || ticket.stake || 0),
-            ActualStake: this.roundToFourDecimals(currencyData.stake || ticket.stake || 0),
-            NetStake: this.roundToFourDecimals(currencyData.stake || ticket.stake || 0),
-            Payout: this.roundToFourDecimals(currencyData.payout || ticket.payout || 0),
+            Stake: this.roundToFourDecimals(ticket.stake || 0),
+            ActualStake: this.roundToFourDecimals(ticket.stake || 0),
+            NetStake: this.roundToFourDecimals(ticket.stake || 0),
+            Payout: this.roundToFourDecimals(ticket.payout || 0),
             Status: status,
             CurrencyIso: currencyIso,
             JackpotContributionAmount: this.roundToFourDecimals(0), // Not available in source data
         };
-    }
 
-    private getCurrencyIso(code: string): string {
-        // Map currency codes to ISO codes
-        const currencyMap: { [key: string]: string } = {
-            'VND': 'VND',
-            'USD': 'USD',
-            'INR': 'INR',
-            'IDR': 'IDR',
-            'INH': 'INH',
-        };
-
-        return currencyMap[code] || code;
+        return transformedTicket;
     }
 
     private roundToFourDecimals(value: number): number {
         return Math.round(value * 10000) / 10000;
     }
 }
-
-
-
-
