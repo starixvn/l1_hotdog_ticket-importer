@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as moment from 'moment';
+import { CurrencyService } from '../config/currency.service';
 
 export interface InputTicket {
     gameId: number;
@@ -34,6 +35,8 @@ export interface TransformedTicket {
 export class DataTransformerService {
     private readonly logger = new Logger(DataTransformerService.name);
 
+    constructor(private readonly currencyService: CurrencyService) {}
+
     transformTickets(tickets: InputTicket[]): TransformedTicket[] {
         this.logger.log(`Transforming ${tickets.length} tickets`);
 
@@ -50,14 +53,14 @@ export class DataTransformerService {
             CustId: ticket.playerId,
             CustName: ticket.playerId, // Using playerId as name since CustName is not available
             GameRoundId: ticket.roundId.toString(),
-            TransDate: this.formatDate(ticket.time),
+            TransDate: this.formatDate(ticket.roundTime),
             SettleDate: this.formatDate(ticket.roundTime),
             Stake: stakeAmount,
             ActualStake: stakeAmount,
             NetStake: stakeAmount,
             Payout: payoutAmount,
             Status: status,
-            CurrencyIso: ticket.currency,
+            CurrencyIso: this.mapCurrencyToISO(ticket.currency),
             JackpotContributionAmount: this.roundToFourDecimals(0), // Not available in source data
         };
     }
@@ -77,6 +80,17 @@ export class DataTransformerService {
 
     private formatDate(date: string | Date): string {
         return moment(date).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+    }
+
+    private mapCurrencyToISO(currency: string): string {
+        const isoCode = this.currencyService.mapCurrencyNameToISO(currency);
+        if (isoCode) {
+            this.logger.debug(`Mapped currency '${currency}' to ISO code '${isoCode}'`);
+            return isoCode;
+        } else {
+            this.logger.warn(`No mapping found for currency '${currency}', using original value`);
+            return currency;
+        }
     }
 
     private roundToFourDecimals(value: number): number {

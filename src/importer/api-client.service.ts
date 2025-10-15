@@ -61,19 +61,8 @@ export class ApiClientService {
 
     private async sendWithRetry(request: ApiRequest, attempt: number = 1): Promise<void> {
         try {
-            this.logger.log(`Attempting to send ${request.Payload.Tickets.length} tickets (attempt ${attempt})`);
-
-            // Add breadcrumb for Sentry tracking
-            this.sentryService.addBreadcrumb({
-                message: `API request attempt ${attempt} for ${request.Payload.Tickets.length} tickets`,
-                category: 'api-request',
-                level: 'info',
-                data: {
-                    sequenceId: request.Seq,
-                    attempt: attempt,
-                    ticketCount: request.Payload.Tickets.length,
-                },
-            });
+            this.logAttempt(request, attempt);
+            this.addSentryBreadcrumb(request, attempt);
 
             const response = await this.makeRequest(request);
 
@@ -81,53 +70,106 @@ export class ApiClientService {
                 this.logger.log(`Successfully sent tickets: ${response.ErrorMessage}`);
                 return;
             } else {
-                throw new Error(`API Error: ${response.ErrorMessage} (Code: ${response.ErrorCode})`);
+                throw this.createApiError(response, request, attempt);
             }
         } catch (error) {
             this.logger.error(`Attempt ${attempt} failed:`, error);
-
-            // Capture error with Sentry for monitoring
-            this.sentryService.captureException(error, {
-                method: 'sendWithRetry',
-                attempt: attempt,
-                maxRetryAttempts: this.maxRetryAttempts,
-                ticketCount: request.Payload.Tickets.length,
-                sequenceId: request.Seq,
-                baseUrl: this.baseUrl,
-                isMaxRetryReached: attempt >= this.maxRetryAttempts,
-            });
+            this.captureSentryError(error, request, attempt);
 
             if (attempt >= this.maxRetryAttempts) {
-                this.logger.error(`Max retry attempts (${this.maxRetryAttempts}) reached. Giving up.`);
-
-                // Send additional Sentry message for max retry failure
-                this.sentryService.captureMessage(`API request failed after ${this.maxRetryAttempts} attempts`, 'error', {
-                    method: 'sendWithRetry',
-                    sequenceId: request.Seq,
-                    ticketCount: request.Payload.Tickets.length,
-                    baseUrl: this.baseUrl,
-                    finalAttempt: attempt,
-                });
-
+                this.handleMaxRetryReached(request, attempt);
                 throw error;
             }
 
-            // Exponential backoff
-            const delay = this.retryBaseDelay * Math.pow(2, attempt - 1);
-            this.logger.log(`Retrying in ${delay}ms...`);
-
-            await this.delay(delay);
-            await this.sendWithRetry(request, attempt + 1);
+            await this.handleRetry(request, attempt);
         }
     }
 
     private async makeRequest(request: ApiRequest): Promise<ApiResponse> {
+        const { body, headers, apiEndpoint } = this.prepareRequest(request);
+
+        this.logger.log(`Making HTTP POST request to: ${apiEndpoint}`, { headers, body });
+
+        try {
+            const response = await this.executeHttpRequest(apiEndpoint, body, headers);
+            this.logger.log(`API response received: ${response.status} ${response.statusText}`, { responseData: response.data });
+
+            this.validateResponse(response, request);
+            this.storeSuccessfulRequest(request, headers, response.data);
+
+            this.logger.log(`Request sent successfully. Total stored requests: ${this.storedRequests.length}`);
+            return response.data as ApiResponse;
+        } catch (error) {
+            return this.handleRequestError(error, request, headers);
+        }
+    }
+
+    private logAttempt(request: ApiRequest, attempt: number): void {
+        this.logger.log(`Attempting to send ${request.Payload.Tickets.length} tickets (attempt ${attempt})`);
+    }
+
+    private addSentryBreadcrumb(request: ApiRequest, attempt: number): void {
+        this.sentryService.addBreadcrumb({
+            message: `API request attempt ${attempt} for ${request.Payload.Tickets.length} tickets`,
+            category: 'api-request',
+            level: 'info',
+            data: {
+                sequenceId: request.Seq,
+                attempt: attempt,
+                ticketCount: request.Payload.Tickets.length,
+            },
+        });
+    }
+
+    private createApiError(response: ApiResponse, request: ApiRequest, attempt: number): Error {
+        const errorDetails = this.createBaseErrorDetails(request, attempt);
+        errorDetails.message = response.ErrorMessage;
+        errorDetails.code = response.ErrorCode;
+
+        return new Error(
+            `API Error: ${response.ErrorMessage} (Code: ${response.ErrorCode}) - Request Details: ${JSON.stringify(errorDetails)}`,
+        );
+    }
+
+    private captureSentryError(error: any, request: ApiRequest, attempt: number): void {
+        this.sentryService.captureException(error, {
+            method: 'sendWithRetry',
+            attempt: attempt,
+            maxRetryAttempts: this.maxRetryAttempts,
+            ticketCount: request.Payload.Tickets.length,
+            sequenceId: request.Seq,
+            baseUrl: this.baseUrl,
+            isMaxRetryReached: attempt >= this.maxRetryAttempts,
+        });
+    }
+
+    private handleMaxRetryReached(request: ApiRequest, attempt: number): void {
+        this.logger.error(`Max retry attempts (${this.maxRetryAttempts}) reached. Giving up.`);
+
+        this.sentryService.captureMessage(`API request failed after ${this.maxRetryAttempts} attempts`, 'error', {
+            method: 'sendWithRetry',
+            sequenceId: request.Seq,
+            ticketCount: request.Payload.Tickets.length,
+            baseUrl: this.baseUrl,
+            finalAttempt: attempt,
+        });
+    }
+
+    private async handleRetry(request: ApiRequest, attempt: number): Promise<void> {
+        const delay = this.calculateRetryDelay(attempt);
+        this.logger.log(`Retrying in ${delay}ms...`);
+
+        await this.delay(delay);
+        await this.sendWithRetry(request, attempt + 1);
+    }
+
+    private calculateRetryDelay(attempt: number): number {
+        return this.retryBaseDelay * Math.pow(2, attempt - 1);
+    }
+
+    private prepareRequest(request: ApiRequest): { body: string; headers: any; apiEndpoint: string } {
         const body = JSON.stringify(request);
-        // Calculate operator-sign using the formula: MD5(body + operatorKey)
-        const operatorSign = crypto
-            .createHash('md5')
-            .update(body + this.operatorKey)
-            .digest('hex');
+        const operatorSign = this.calculateOperatorSign(body);
 
         const headers = {
             'Content-Type': 'application/json',
@@ -136,70 +178,105 @@ export class ApiClientService {
         };
 
         const apiEndpoint = `${this.baseUrl}/api/OperatorApi/ImportExtTicket`;
-        this.logger.log(`Sending request to ${apiEndpoint}`);
-        this.logger.debug(`Request headers:`, headers);
-        this.logger.debug(`Request body:`, body);
 
-        try {
-            this.logger.log(`Making HTTP POST request to: ${apiEndpoint}`);
+        return { body, headers, apiEndpoint };
+    }
 
-            const response = await firstValueFrom(
-                this.httpService.post(apiEndpoint, body, {
-                    headers,
-                    timeout: 30000, // 30 second timeout
-                }),
-            );
+    private calculateOperatorSign(body: string): string {
+        return crypto
+            .createHash('md5')
+            .update(body + this.operatorKey)
+            .digest('hex');
+    }
 
-            this.logger.log(`API response received: ${response.status} ${response.statusText}`);
-            this.logger.debug(`Response data:`, response.data);
+    private async executeHttpRequest(apiEndpoint: string, body: string, headers: any): Promise<any> {
+        return await firstValueFrom(
+            this.httpService.post(apiEndpoint, body, {
+                headers,
+                timeout: 30000, // 30 second timeout
+            }),
+        );
+    }
 
-            // Validate response structure
-            if (!response.data || typeof response.data !== 'object') {
-                throw new Error('Invalid response format from API');
-            }
-
-            // Store successful request for reference
-            this.storedRequests.push({
-                ...request,
-                _storedAt: new Date().toISOString(),
-                _headers: headers,
-                _response: response.data,
-            });
-
-            this.logger.log(`Request sent successfully. Total stored requests: ${this.storedRequests.length}`);
-
-            // Return the API response
-            return response.data as ApiResponse;
-        } catch (error) {
-            this.logger.error(`HTTP request failed:`, error);
-
-            // Enhanced error information
-            const errorInfo = {
-                message: error.message,
-                status: error.response?.status,
-                statusText: error.response?.statusText,
-                data: error.response?.data,
-                code: error.code,
-                timeout: error.timeout,
+    private validateResponse(response: any, request: ApiRequest): void {
+        if (!response.data || typeof response.data !== 'object') {
+            const errorDetails = {
+                ...this.createBaseErrorDetails(request),
+                responseStatus: response.status,
+                responseStatusText: response.statusText,
+                responseDataType: typeof response.data,
+                responseData: response.data,
             };
 
-            this.logger.error(`Error details:`, errorInfo);
-
-            // Store failed request for debugging
-            this.storedRequests.push({
-                ...request,
-                _storedAt: new Date().toISOString(),
-                _headers: headers,
-                _error: errorInfo,
-            });
-
-            // Create a more descriptive error for retry logic
-            const enhancedError = new Error(`API request failed: ${error.message} (Status: ${error.response?.status || 'Unknown'})`);
-            enhancedError.stack = error.stack;
-
-            // Re-throw the enhanced error to be handled by the retry logic
-            throw enhancedError;
+            throw new Error(`Invalid response format from API - Response Details: ${JSON.stringify(errorDetails)}`);
         }
+    }
+
+    private storeSuccessfulRequest(request: ApiRequest, headers: any, responseData: any): void {
+        this.storedRequests.push({
+            ...request,
+            _storedAt: new Date().toISOString(),
+            _headers: headers,
+            _response: responseData,
+        });
+    }
+
+    private handleRequestError(error: any, request: ApiRequest, headers: any): never {
+        this.logger.error(`HTTP request failed:`, error);
+
+        const errorInfo = this.extractErrorInfo(error);
+        this.logger.error(`Error details:`, errorInfo);
+
+        this.storeFailedRequest(request, headers, errorInfo);
+        throw this.createEnhancedError(error, request);
+    }
+
+    private extractErrorInfo(error: any): any {
+        return {
+            message: error.message,
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+            code: error.code,
+            timeout: error.timeout,
+        };
+    }
+
+    private storeFailedRequest(request: ApiRequest, headers: any, errorInfo: any): void {
+        this.storedRequests.push({
+            ...request,
+            _storedAt: new Date().toISOString(),
+            _headers: headers,
+            _error: errorInfo,
+        });
+    }
+
+    private createEnhancedError(error: any, request: ApiRequest): Error {
+        const enhancedErrorDetails = {
+            ...this.createBaseErrorDetails(request),
+            originalMessage: error.message,
+            status: error.response?.status || 'Unknown',
+            statusText: error.response?.statusText,
+            errorCode: error.code,
+            timeout: error.timeout,
+        };
+
+        const enhancedError = new Error(
+            `API request failed: ${error.message} (Status: ${error.response?.status || 'Unknown'}) - Request Details: ${JSON.stringify(enhancedErrorDetails)}`,
+        );
+        enhancedError.stack = error.stack;
+
+        return enhancedError;
+    }
+
+    private createBaseErrorDetails(request: ApiRequest, attempt?: number): any {
+        return {
+            sequenceId: request.Seq,
+            ticketCount: request.Payload.Tickets.length,
+            timestamp: request.Timestamp,
+            attempt: attempt,
+            baseUrl: this.baseUrl,
+        };
     }
 
     private generateSequenceId(): string {

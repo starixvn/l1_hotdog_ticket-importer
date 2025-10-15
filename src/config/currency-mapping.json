@@ -1,0 +1,448 @@
+{
+    "currencyMappings": [
+        {
+            "currencyName": "INH",
+            "currencyISO": "VND",
+            "description": "Vietnamese Dong",
+            "multiplier": 1000
+        },
+        {
+            "currencyName": "PE",
+            "currencyISO": "PHP",
+            "description": "Philippine Peso",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "MMK3",
+            "currencyISO": "MMK3",
+            "description": "Myanmar Kyats",
+            "multiplier": 100
+        },
+        {
+            "currencyName": "UYU",
+            "currencyISO": "UYU",
+            "description": "Uruguayan Peso",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "RMB",
+            "currencyISO": "CNY",
+            "description": "Chinese Yuan Renminbi",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "RM",
+            "currencyISO": "MYR",
+            "description": "Malaysian Ringgit",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "HK$",
+            "currencyISO": "HKD",
+            "description": "Hong Kong Dollar",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "DKK",
+            "currencyISO": "DKK",
+            "description": "Danish Krone",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "MMK",
+            "currencyISO": "MMK",
+            "description": "Myanmar Kyats",
+            "multiplier": 1000
+        },
+        {
+            "currencyName": "TB",
+            "currencyISO": "THB",
+            "description": "Thai Baht",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "ZMW",
+            "currencyISO": "ZMW",
+            "description": "Zambian Kwacha",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "CZK",
+            "currencyISO": "CZK",
+            "description": "Czech Koruna",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "MXN",
+            "currencyISO": "MXN",
+            "description": "Mexican Peso",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "ZAR",
+            "currencyISO": "ZAR",
+            "description": "South African Rand",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "BDT",
+            "currencyISO": "BDT",
+            "description": "Bangladesh Tak",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "PKR",
+            "currencyISO": "PKR",
+            "description": "Pakistan Rupee",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "ETB",
+            "currencyISO": "ETB",
+            "description": "Ethiopian Birr",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "AFN",
+            "currencyISO": "AFN",
+            "description": "Afghan Afghani",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "BTN",
+            "currencyISO": "BTN",
+            "description": "Bhutan Ngultrum",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "GMD",
+            "currencyISO": "GMD",
+            "description": "Gambian Dalasi",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "INR",
+            "currencyISO": "INR",
+            "description": "Indian Rupee",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "BRL",
+            "currencyISO": "BRL",
+            "description": "Brazilian Real",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "TTD",
+            "currencyISO": "TTD",
+            "description": "Trinidad/Tobago Dollar",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "USD",
+            "currencyISO": "USD",
+            "description": "US Dollar",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "AUD",
+            "currencyISO": "AUD",
+            "description": "Australian Dollar",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "CAN",
+            "currencyISO": "CAD",
+            "description": "Canadian Dollar",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "BND",
+            "currencyISO": "BND",
+            "description": "Brunei Dollar",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "KRW2",
+            "currencyISO": "KRW2",
+            "description": "South Korean Won",
+            "multiplier": 1000
+        },
+        {
+            "currencyName": "USDT",
+            "currencyISO": "USDT",
+            "description": "USDT",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "BBD",
+            "currencyISO": "BBD",
+            "description": "Barbados Dollar",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "NZD",
+            "currencyISO": "NZD",
+            "description": "New Zealand dollar",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "IN",
+            "currencyISO": "IDR",
+            "description": "Indonesian Rupiah",
+            "multiplier": 1000
+        },
+        {
+            "currencyName": "IDR",
+            "currencyISO": "IDR",
+            "description": "Indonesian Rupiah",
+            "multiplier": 1000
+        },
+        {
+            "currencyName": "BWP",
+            "currencyISO": "BWP",
+            "description": "Botswana Pula",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "NAD",
+            "currencyISO": "NAD",
+            "description": "Namibia Dollar",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "TZS",
+            "currencyISO": "TZS",
+            "description": "Tanzanian Shilling",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "NGN",
+            "currencyISO": "NGN",
+            "description": "Nigerian Naira",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "ARS",
+            "currencyISO": "ARS",
+            "description": "Argentine Peso",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "CLP",
+            "currencyISO": "CLP",
+            "description": "Chilean Peso",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "KZT",
+            "currencyISO": "KZT",
+            "description": "Kazakhstan Tenge",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "JPY",
+            "currencyISO": "JPY",
+            "description": "Japanese Yen",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "NPR",
+            "currencyISO": "NPR",
+            "description": "Nepalese Rupee",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "KES",
+            "currencyISO": "KES",
+            "description": "Kenyan Shilling",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "RUB",
+            "currencyISO": "RUB",
+            "description": "Russian Ruble",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "COP",
+            "currencyISO": "COP",
+            "description": "Colombian Peso",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "WON",
+            "currencyISO": "KRW",
+            "description": "South Korean Won",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "MMK2",
+            "currencyISO": "MMK2",
+            "description": "Myanmar Kyats",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "LKR",
+            "currencyISO": "LKR",
+            "description": "Sri Lanka Rupee",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "DZD",
+            "currencyISO": "DZD",
+            "description": "Algerian Dinar",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "HTG",
+            "currencyISO": "HTG",
+            "description": "Haitian Gourde",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "JMD",
+            "currencyISO": "JMD",
+            "description": "Jamaican Dollar",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "EGP",
+            "currencyISO": "EGP",
+            "description": "Egyptian Pound",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "LIR",
+            "currencyISO": "TRY",
+            "description": "Turkish Lira",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "GHS",
+            "currencyISO": "GHS",
+            "description": "Ghanaian Cedi",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "NOK",
+            "currencyISO": "NOK",
+            "description": "Norwegian Krone",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "SEK",
+            "currencyISO": "SEK",
+            "description": "Swedish Krona",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "MAD",
+            "currencyISO": "MAD",
+            "description": "Moroccan Dirham",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "LAK",
+            "currencyISO": "LAK",
+            "description": "Lao Kip",
+            "multiplier": 1000
+        },
+        {
+            "currencyName": "RON",
+            "currencyISO": "RON",
+            "description": "Romanian Leu",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "PLN",
+            "currencyISO": "PLN",
+            "description": "Polish Zloty",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "PEN",
+            "currencyISO": "PEN",
+            "description": "Peruvian Sol",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "AED",
+            "currencyISO": "AED",
+            "description": "UAE Dirham",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "TND",
+            "currencyISO": "TND",
+            "description": "Tunisian Dinar",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "PGK",
+            "currencyISO": "PGK",
+            "description": "The Papua New Guinean Kina",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "KHR",
+            "currencyISO": "KHR",
+            "description": "Cambodian Riel",
+            "multiplier": 1000
+        },
+        {
+            "currencyName": "SAR",
+            "currencyISO": "SAR",
+            "description": "Saudi Arabia",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "EURO",
+            "currencyISO": "EUR",
+            "description": "Euro",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "CHF",
+            "currencyISO": "CHF",
+            "description": "Swiss Franc",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "GBP",
+            "currencyISO": "GBP",
+            "description": "British Pound",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "COP2",
+            "currencyISO": "COP2",
+            "description": "Colombian Peso",
+            "multiplier": 1000
+        },
+        {
+            "currencyName": "TZS2",
+            "currencyISO": "TZS2",
+            "description": "Tanzanian Shilling",
+            "multiplier": 1000
+        },
+        {
+            "currencyName": "IDR2",
+            "currencyISO": "IDR2",
+            "description": "Indonesian Rupiah",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "VND2",
+            "currencyISO": "VND2",
+            "description": "Vietnamese Dong",
+            "multiplier": 1
+        },
+        {
+            "currencyName": "LBP2",
+            "currencyISO": "LBP2",
+            "description": "Lebanese Pound",
+            "multiplier": 1
+        }
+    ]
+}
