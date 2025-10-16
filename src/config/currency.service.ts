@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { CurrencyMapping, CurrencyMappingConfig, CurrencyMappingLookup } from './currency.interface';
+import { CurrencyMappingConfig, CurrencyMappingLookup } from './currency.interface';
 
 @Injectable()
 export class CurrencyService {

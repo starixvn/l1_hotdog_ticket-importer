@@ -90,25 +90,6 @@ export class TicketSilo {
 
     @Prop({ type: Number })
     loss: number;
-
-    @Prop({ default: '3.5.0' })
-    __v: string;
-
-    @Prop({ type: Object })
-    _ids: {
-        roundSummary: Types.ObjectId;
-        hourlyStatement: Types.ObjectId;
-        dailyStatement: Types.ObjectId;
-    };
-
-    @Prop({ type: Object })
-    __archive: {
-        summarized: boolean;
-        hourly: boolean;
-        daily: boolean;
-        eventtime: Date;
-        v: string;
-    };
 }
 
 export const TicketSiloSchema = SchemaFactory.createForClass(TicketSilo);

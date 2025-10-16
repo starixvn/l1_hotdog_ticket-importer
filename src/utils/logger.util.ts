@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 
 export class LoggerUtil {
     private static instance: LoggerUtil;
-    private logger: Logger;
+    private readonly logger: Logger;
 
     private constructor() {
         this.logger = new Logger('TicketImporter');
@@ -35,7 +35,3 @@ export class LoggerUtil {
         this.logger.verbose(message, context);
     }
 }
-
-
-
-

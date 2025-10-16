@@ -12,10 +12,10 @@ export class TicketService {
     private readonly logger = new Logger(TicketService.name);
 
     constructor(
-        @InjectModel(TicketSilo.name) private ticketSiloModel: Model<TicketSiloDocument>,
-        @InjectModel(ProcessedBatch.name) private processedBatchModel: Model<ProcessedBatchDocument>,
-        private configService: ConfigService,
-        private sentryService: SentryService,
+        @InjectModel(TicketSilo.name) private readonly ticketSiloModel: Model<TicketSiloDocument>,
+        @InjectModel(ProcessedBatch.name) private readonly processedBatchModel: Model<ProcessedBatchDocument>,
+        private readonly configService: ConfigService,
+        private readonly sentryService: SentryService,
     ) {}
 
     async getTicketsFromLastProcessed(): Promise<TicketSilo[]> {
@@ -84,7 +84,7 @@ export class TicketService {
             const ticketIds = tickets.map((ticket) => `${ticket.playerId}_${ticket.gameId}_${ticket.roundId}`);
 
             // Create a processed batch record
-            const batchId = `batch_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            const batchId = `batch_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
             const processedBatch = {
                 batchId,
                 ticketIds,

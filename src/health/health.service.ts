@@ -9,8 +9,8 @@ export class HealthService {
     private readonly logger = new Logger(HealthService.name);
 
     constructor(
-        @InjectModel(TicketSilo.name) private ticketSiloModel: Model<TicketSiloDocument>,
-        @InjectModel(ProcessedBatch.name) private processedBatchModel: Model<ProcessedBatchDocument>,
+        @InjectModel(TicketSilo.name) private readonly ticketSiloModel: Model<TicketSiloDocument>,
+        @InjectModel(ProcessedBatch.name) private readonly processedBatchModel: Model<ProcessedBatchDocument>,
     ) {}
 
     async getHealthStatus() {

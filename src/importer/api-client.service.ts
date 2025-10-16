@@ -59,7 +59,7 @@ export class ApiClientService {
         await this.sendWithRetry(request);
     }
 
-    private async sendWithRetry(request: ApiRequest, attempt: number = 1): Promise<void> {
+    private async sendWithRetry(request: ApiRequest, attempt = 1): Promise<void> {
         try {
             this.logAttempt(request, attempt);
             this.addSentryBreadcrumb(request, attempt);
@@ -190,7 +190,7 @@ export class ApiClientService {
     }
 
     private async executeHttpRequest(apiEndpoint: string, body: string, headers: any): Promise<any> {
-        return await firstValueFrom(
+        return firstValueFrom(
             this.httpService.post(apiEndpoint, body, {
                 headers,
                 timeout: 30000, // 30 second timeout
@@ -280,7 +280,7 @@ export class ApiClientService {
     }
 
     private generateSequenceId(): string {
-        return `seq_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        return `seq_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
     }
 
     private delay(ms: number): Promise<void> {

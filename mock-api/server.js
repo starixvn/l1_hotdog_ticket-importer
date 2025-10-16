@@ -30,7 +30,7 @@ function validateOperatorSign(body, operatorKey, receivedSign) {
 // Mock API endpoint
 app.post('/api/OperatorApi/ImportExtTicket', (req, res) => {
     const timestamp = new Date().toISOString();
-    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
     console.log(`\n[${timestamp}] Received request: ${requestId}`);
     console.log('Headers:', req.headers);

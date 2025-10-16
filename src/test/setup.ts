@@ -4,6 +4,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigLoaderService } from '../config/config-loader.service';
 import configuration from '../config/configuration';
 
+// Test data constants
+export const TEST_DATE = '2025-09-03T03:49:28.781Z';
+
 // Mock the ConfigLoaderService for testing
 jest.mock('../config/config-loader.service');
 
@@ -93,8 +96,8 @@ export const mockTicket = {
     code: 'VND',
     isTest: 0,
     _roundId: '68b7bac8dbdc8fd66e470c38',
-    time: new Date('2025-09-03T03:49:28.781Z'),
-    roundTime: new Date('2025-09-03T03:49:28.781Z'),
+    time: new Date(TEST_DATE),
+    roundTime: new Date(TEST_DATE),
     gameId: 155,
     siteId: '',
     roundId: 115,
@@ -133,7 +136,7 @@ export const mockTicket = {
         summarized: true,
         hourly: true,
         daily: true,
-        eventtime: new Date('2025-09-03T03:49:28.781Z'),
+        eventtime: new Date(TEST_DATE),
         v: '3.0.6',
     },
 };
@@ -143,8 +146,8 @@ export const mockTransformedTicket = {
     CustId: '9625700',
     CustName: '9625700',
     GameRoundId: '115',
-    TransDate: '2025-09-03T03:49:28.781Z',
-    SettleDate: '2025-09-03T03:49:28.781Z',
+    TransDate: TEST_DATE,
+    SettleDate: TEST_DATE,
     Stake: 1.05,
     ActualStake: 1.05,
     NetStake: 1.05,
@@ -155,7 +158,7 @@ export const mockTransformedTicket = {
 };
 
 export const mockApiResponse = {
-    Timestamp: '2025-09-03T03:49:28.781Z',
+    Timestamp: TEST_DATE,
     Seq: '12345',
     ErrorCode: 0,
     ErrorMessage: 'Success',
@@ -165,6 +168,6 @@ export const mockProcessedBatch = {
     _id: 'batch_123',
     batchId: 'batch_123',
     ticketIds: ['9625700_155_115'],
-    ticketTime: new Date('2025-09-03T03:49:28.781Z'),
+    ticketTime: new Date(TEST_DATE),
     batchSize: 1,
 };
