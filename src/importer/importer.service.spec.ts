@@ -93,8 +93,12 @@ describe('ImporterService', () => {
                     provide: ConfigService,
                     useValue: {
                         get: jest.fn((key: string) => {
-                            if (key === 'importer.operatorId') return 'ONEworksVGCash';
-                            return undefined;
+                            const config: { [key: string]: any } = {
+                                'importer.operatorId': 'SabaPlay_HD',
+                                'importer.batchSize': 1,
+                                'importer.requestDelayMs': 12000,
+                            };
+                            return config[key];
                         }),
                     },
                 },

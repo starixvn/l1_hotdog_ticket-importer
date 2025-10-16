@@ -102,7 +102,7 @@ export class TicketService {
         }
     }
 
-    private async getLastProcessedTime(): Promise<Date> {
+    async getLastProcessedTime(): Promise<Date> {
         try {
             // Get the latest processed batch time
             const latestProcessed = await this.processedBatchModel.findOne({}, {}, { sort: { ticketTime: -1 } }).lean();

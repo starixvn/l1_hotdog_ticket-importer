@@ -1,0 +1,28 @@
+{
+    "database": {
+        "uri": "mongodb://localhost:27017",
+        "name": "ticket_importer_test"
+    },
+    "api": {
+        "baseUrl": "https://api.test.com",
+        "operatorPwd": "test_password",
+        "operatorKey": "test_key"
+    },
+    "importer": {
+        "batchSize": 10,
+        "requestDelayMs": 1000,
+        "maxRetryAttempts": 2,
+        "retryBaseDelayMs": 500,
+        "operatorId": "TestOperator"
+    },
+    "application": {
+        "port": 3001,
+        "nodeEnv": "test",
+        "logLevel": "debug"
+    },
+    "sentry": {
+        "dsn": "https://test@sentry.io/test",
+        "environment": "test",
+        "release": "1.0.0"
+    }
+}
