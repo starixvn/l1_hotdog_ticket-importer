@@ -28,13 +28,12 @@ export class TicketService {
             const endTime = moment().subtract(10, 'minutes').toDate();
 
             // Get operatorId from configuration
-            const operatorId = this.configService.get<string>('importer.operatorId') || process.env.OPERATOR_ID || 'ONEworksVGCash';
+            const operatorId = this.configService.get<string>('importer.operatorId');
 
             // Debug: Log all configuration values
             this.logger.debug(`Configuration values:`, {
                 operatorId,
                 allImporterConfig: this.configService.get('importer'),
-                envOperatorId: process.env.OPERATOR_ID,
             });
 
             // Get all processed ticket IDs from all batches

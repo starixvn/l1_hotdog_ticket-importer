@@ -1,0 +1,27 @@
+{
+    "database": {
+        "uri": "mongodb://localhost:27017/ticket_importer"
+    },
+    "api": {
+        "baseUrl": "https://owapi1.playonesit.com:7062",
+        "operatorPwd": "rmt727hm",
+        "operatorKey": "cem0g25u"
+    },
+    "importer": {
+        "batchSize": 1,
+        "requestDelayMs": 12000,
+        "maxRetryAttempts": 0,
+        "retryBaseDelayMs": 1000,
+        "operatorId": "SabaPlay_HD"
+    },
+    "application": {
+        "port": 3000,
+        "nodeEnv": "development",
+        "logLevel": "info"
+    },
+    "sentry": {
+        "dsn": "https://3ea51abd00a0a16052891854006c17f6@sentry-k8s.lumigame.com/16",
+        "environment": "development",
+        "release": "1.0.0"
+    }
+}

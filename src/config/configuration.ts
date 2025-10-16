@@ -1,33 +1,42 @@
-export default () => ({
-    port: parseInt(process.env.PORT, 10) || 3000,
-    nodeEnv: process.env.NODE_ENV || 'development',
+import { ConfigLoaderService } from './config-loader.service';
 
-    database: {
-        uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/ticket_importer',
-    },
+// Create a singleton instance of the config loader
+const configLoader = new ConfigLoaderService();
 
-    api: {
-        baseUrl: process.env.API_BASE_URL || 'https://api.example.com',
-        operatorPwd: process.env.API_OPERATOR_PWD || 'rmt727hm',
-        operatorKey: process.env.API_OPERATOR_KEY || '',
-    },
+export default () => {
+    const config = configLoader.getConfig();
 
-    importer: {
-        batchSize: parseInt(process.env.BATCH_SIZE, 10) || 100,
-        requestDelayMs: parseInt(process.env.REQUEST_DELAY_MS, 10) || 10000,
-        maxRetryAttempts: parseInt(process.env.MAX_RETRY_ATTEMPTS, 10) || 5,
-        retryBaseDelayMs: parseInt(process.env.RETRY_BASE_DELAY_MS, 10) || 1000,
-        operatorId: process.env.OPERATOR_ID || 'ONEworksVGCash',
-    },
+    return {
+        port: config.application.port,
+        nodeEnv: config.application.nodeEnv,
 
-    logging: {
-        level: process.env.LOG_LEVEL || 'info',
-    },
+        database: {
+            uri: config.database.uri,
+        },
 
-    sentry: {
-        dsn: process.env.SENTRY_DSN,
-        environment: process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development',
-        release: process.env.SENTRY_RELEASE || '1.0.0',
-        enabled: !!process.env.SENTRY_DSN,
-    },
-});
+        api: {
+            baseUrl: config.api.baseUrl,
+            operatorPwd: config.api.operatorPwd,
+            operatorKey: config.api.operatorKey,
+        },
+
+        importer: {
+            batchSize: config.importer.batchSize,
+            requestDelayMs: config.importer.requestDelayMs,
+            maxRetryAttempts: config.importer.maxRetryAttempts,
+            retryBaseDelayMs: config.importer.retryBaseDelayMs,
+            operatorId: config.importer.operatorId,
+        },
+
+        logging: {
+            level: config.application.logLevel,
+        },
+
+        sentry: {
+            dsn: config.sentry.dsn,
+            environment: config.sentry.environment,
+            release: config.sentry.release,
+            enabled: !!config.sentry.dsn,
+        },
+    };
+};

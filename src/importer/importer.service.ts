@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { ConfigService } from '@nestjs/config';
 import { TicketService } from '../ticket/ticket.service';
 import { ApiClientService } from './api-client.service';
 import { DataTransformerService } from './data-transformer.service';
@@ -12,6 +13,7 @@ export class ImporterService {
         private readonly ticketService: TicketService,
         private readonly apiClientService: ApiClientService,
         private readonly dataTransformerService: DataTransformerService,
+        private readonly configService: ConfigService,
     ) {}
 
     // Run every 5 minutes
@@ -41,8 +43,8 @@ export class ImporterService {
     }
 
     private async sendTicketsInBatches(transformedTickets: any[], originalTickets: any[]): Promise<void> {
-        const batchSize = parseInt(process.env.BATCH_SIZE || '100');
-        const delayMs = parseInt(process.env.REQUEST_DELAY_MS || '10000');
+        const batchSize = this.configService.get<number>('importer.batchSize');
+        const delayMs = this.configService.get<number>('importer.requestDelayMs');
 
         for (let i = 0; i < transformedTickets.length; i += batchSize) {
             const batch = transformedTickets.slice(i, i + batchSize);

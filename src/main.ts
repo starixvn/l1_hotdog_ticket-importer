@@ -3,11 +3,11 @@ import { AppModule } from './app.module';
 import { Logger } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
-import { config } from 'dotenv';
-import * as path from 'path';
+import { ConfigLoaderService } from './config/config-loader.service';
 
-// Load environment variables before anything else
-config({ path: path.resolve(__dirname, '../.env') });
+// Load configuration from JSON file
+const configLoader = new ConfigLoaderService();
+const config = configLoader.getConfig();
 
 async function bootstrap() {
     const logger = new Logger('Bootstrap');
@@ -16,23 +16,21 @@ async function bootstrap() {
     console.log('🚀 Starting Ticket Importer Service...');
     logger.log('🚀 Starting Ticket Importer Service...');
 
-    // Debug environment variables
-    console.log('🔍 Environment variables check:');
-    console.log('  - SENTRY_DSN:', process.env.SENTRY_DSN ? 'SET' : 'NOT SET');
-    console.log('  - SENTRY_DSN value:', process.env.SENTRY_DSN ? process.env.SENTRY_DSN.substring(0, 20) + '...' : 'undefined');
-    console.log('  - NODE_ENV:', process.env.NODE_ENV || 'undefined');
-    console.log('  - PORT:', process.env.PORT || 'undefined');
-    console.log(
-        '  - All env keys containing SENTRY:',
-        Object.keys(process.env).filter((key) => key.includes('SENTRY')),
-    );
+    // Debug configuration
+    console.log('🔍 Configuration loaded:');
+    console.log('  - Database URI:', config.database.uri ? 'SET' : 'NOT SET');
+    console.log('  - API Base URL:', config.api.baseUrl);
+    console.log('  - Sentry DSN:', config.sentry.dsn ? 'SET' : 'NOT SET');
+    console.log('  - Node Environment:', config.application.nodeEnv);
+    console.log('  - Port:', config.application.port);
+    console.log('  - Operator ID:', config.importer.operatorId);
 
     // Initialize Sentry
-    if (process.env.SENTRY_DSN) {
+    if (config.sentry.dsn) {
         Sentry.init({
-            dsn: process.env.SENTRY_DSN,
-            environment: process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development',
-            release: process.env.SENTRY_RELEASE || '1.0.0',
+            dsn: config.sentry.dsn,
+            environment: config.sentry.environment || config.application.nodeEnv || 'development',
+            release: config.sentry.release || '1.0.0',
             integrations: [nodeProfilingIntegration()],
             // Performance Monitoring
             tracesSampleRate: 1.0,
@@ -53,7 +51,7 @@ async function bootstrap() {
     // Enable CORS if needed
     app.enableCors();
 
-    const port = process.env.PORT || 3000;
+    const port = config.application.port;
     console.log(`🌐 Starting server on port ${port}...`);
     logger.log(`🌐 Starting server on port ${port}...`);
 
@@ -61,28 +59,28 @@ async function bootstrap() {
 
     // Log application startup information
     console.log(`🚀 Application is running on: http://localhost:${port}`);
-    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🔍 Sentry monitoring: ${process.env.SENTRY_DSN ? 'Enabled' : 'Disabled'}`);
-    console.log(`📝 Log level: ${process.env.LOG_LEVEL || 'info'}`);
+    console.log(`📊 Environment: ${config.application.nodeEnv}`);
+    console.log(`🔍 Sentry monitoring: ${config.sentry.dsn ? 'Enabled' : 'Disabled'}`);
+    console.log(`📝 Log level: ${config.application.logLevel}`);
     console.log(`✅ Ticket Importer Service started successfully!`);
 
     logger.log(`🚀 Application is running on: http://localhost:${port}`);
-    logger.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-    logger.log(`🔍 Sentry monitoring: ${process.env.SENTRY_DSN ? 'Enabled' : 'Disabled'}`);
-    logger.log(`📝 Log level: ${process.env.LOG_LEVEL || 'info'}`);
+    logger.log(`📊 Environment: ${config.application.nodeEnv}`);
+    logger.log(`🔍 Sentry monitoring: ${config.sentry.dsn ? 'Enabled' : 'Disabled'}`);
+    logger.log(`📝 Log level: ${config.application.logLevel}`);
     logger.log(`✅ Ticket Importer Service started successfully!`);
 
     // Send startup message to Sentry
-    if (process.env.SENTRY_DSN) {
+    if (config.sentry.dsn) {
         Sentry.captureMessage('Ticket Importer Service started successfully', {
             level: 'info',
             tags: {
                 event: 'application_startup',
-                environment: process.env.NODE_ENV || 'development',
+                environment: config.application.nodeEnv,
             },
             extra: {
                 port: port,
-                logLevel: process.env.LOG_LEVEL || 'info',
+                logLevel: config.application.logLevel,
                 timestamp: new Date().toISOString(),
             },
         });

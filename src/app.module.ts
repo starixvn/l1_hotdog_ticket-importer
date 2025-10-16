@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HttpModule } from '@nestjs/axios';
@@ -15,11 +15,15 @@ import configuration from './config/configuration';
     imports: [
         ConfigModule.forRoot({
             isGlobal: true,
-            envFilePath: ['.env'],
             load: [configuration],
             expandVariables: true,
         }),
-        MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://localhost:27017/ticket_importer'),
+        MongooseModule.forRootAsync({
+            useFactory: (configService: ConfigService) => ({
+                uri: configService.get<string>('database.uri'),
+            }),
+            inject: [ConfigService],
+        }),
         ScheduleModule.forRoot(),
         HttpModule,
         DatabaseModule,

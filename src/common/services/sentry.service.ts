@@ -1,9 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as Sentry from '@sentry/node';
 
 @Injectable()
 export class SentryService {
     private readonly logger = new Logger(SentryService.name);
+
+    constructor(private readonly configService: ConfigService) {}
 
     /**
      * Capture an exception manually
@@ -71,6 +74,6 @@ export class SentryService {
      * Check if Sentry is enabled
      */
     isEnabled(): boolean {
-        return !!process.env.SENTRY_DSN;
+        return !!this.configService.get<string>('sentry.dsn');
     }
 }

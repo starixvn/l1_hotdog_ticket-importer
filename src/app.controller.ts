@@ -25,7 +25,10 @@ export class AppController {
         return {
             operatorId: this.configService.get<string>('importer.operatorId'),
             allImporterConfig: this.configService.get('importer'),
-            envOperatorId: process.env.OPERATOR_ID,
+            databaseConfig: this.configService.get('database'),
+            apiConfig: this.configService.get('api'),
+            applicationConfig: this.configService.get('application'),
+            sentryConfig: this.configService.get('sentry'),
         };
     }
 }
