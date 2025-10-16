@@ -128,7 +128,7 @@ app.post('/api/OperatorApi/ImportExtTicket', (req, res) => {
     console.log(`📊 Total requests: ${requestStats.total}, Successful: ${requestStats.successful}, Failed: ${requestStats.failed}`);
 
     // Return success response
-    res.status(200).json({
+    return res.status(200).json({
         Timestamp: timestamp,
         Seq: req.body.Seq,
         ErrorCode: 0,
