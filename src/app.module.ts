@@ -20,7 +20,7 @@ import configuration from './config/configuration';
         }),
         MongooseModule.forRootAsync({
             useFactory: (configService: ConfigService) => ({
-                uri: configService.get<string>('database.uri'),
+                uri: `${configService.get<string>('database.uri')}/${configService.get<string>('database.name')}`,
             }),
             inject: [ConfigService],
         }),

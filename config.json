@@ -1,6 +1,7 @@
 {
     "database": {
-        "uri": "mongodb://localhost:27017/ticket_importer"
+        "uri": "mongodb://localhost:27017",
+        "name": "ticket_importer"
     },
     "api": {
         "baseUrl": "https://owapi1.playonesit.com:7062",
