@@ -10,8 +10,8 @@ export class ApiLogController {
      */
     @Get()
     async getApiLogs(
-        @Query('page') page: string = '1',
-        @Query('limit') limit: string = '50',
+        @Query('page') page = '1',
+        @Query('limit') limit = '50',
         @Query('operatorId') operatorId?: string,
         @Query('status') status?: 'success' | 'failed',
         @Query('errorCode') errorCode?: string,

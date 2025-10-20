@@ -17,7 +17,7 @@
         "operatorId": "SabaPlay_HD"
     },
     "application": {
-        "port": 3000,
+        "port": 5000,
         "nodeEnv": "development",
         "logLevel": "info"
     },

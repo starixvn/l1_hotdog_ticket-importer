@@ -46,7 +46,7 @@ export class DatabaseSwitchController {
     @Post('switch/:dbName')
     async switchDatabase(@Param('dbName') dbName: string) {
         try {
-            const db = await this.dynamicDbService.switchDatabase(dbName);
+            await this.dynamicDbService.switchDatabase(dbName);
             return {
                 success: true,
                 database: dbName,
@@ -99,8 +99,8 @@ export class DatabaseSwitchController {
     async queryCollection(
         @Param('dbName') dbName: string,
         @Param('collectionName') collectionName: string,
-        @Query('limit') limit: string = '10',
-        @Query('skip') skip: string = '0',
+        @Query('limit') limit = '10',
+        @Query('skip') skip = '0',
     ) {
         try {
             const collection = await this.dynamicDbService.getCollection(dbName, collectionName);

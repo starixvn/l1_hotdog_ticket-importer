@@ -31,7 +31,7 @@ export class DatabaseUsageExampleService {
         this.logger.log(`Switching to ${targetDatabase} for user ${userId} (${userType})`);
 
         try {
-            const db = await this.dynamicDbService.switchDatabase(targetDatabase);
+            await this.dynamicDbService.switchDatabase(targetDatabase);
             return {
                 success: true,
                 database: targetDatabase,

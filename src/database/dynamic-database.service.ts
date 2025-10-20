@@ -6,7 +6,7 @@ import { MongoClient, Db } from 'mongodb';
 export class DynamicDatabaseService {
     private readonly logger = new Logger(DynamicDatabaseService.name);
     private client: MongoClient;
-    private connections: Map<string, Db> = new Map();
+    private readonly connections: Map<string, Db> = new Map();
 
     constructor(private readonly configService: ConfigService) {
         this.initializeClient();
@@ -44,7 +44,10 @@ export class DynamicDatabaseService {
 
         // Check if we already have a connection to this database
         if (this.connections.has(dbName)) {
-            return this.connections.get(dbName)!;
+            const existingConnection = this.connections.get(dbName);
+            if (existingConnection) {
+                return existingConnection;
+            }
         }
 
         try {
@@ -100,7 +103,7 @@ export class DynamicDatabaseService {
      */
     async switchDatabase(dbName: string): Promise<Db> {
         this.logger.log(`🔄 Switching to database: ${dbName}`);
-        return await this.getDatabase(dbName);
+        return this.getDatabase(dbName);
     }
 
     /**

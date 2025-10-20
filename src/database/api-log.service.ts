@@ -132,8 +132,8 @@ export class ApiLogService {
      * Get API logs with pagination and filtering
      */
     async getApiLogs(
-        page: number = 1,
-        limit: number = 50,
+        page = 1,
+        limit = 50,
         filters: {
             operatorId?: string;
             status?: 'success' | 'failed';
@@ -185,11 +185,17 @@ export class ApiLogService {
      */
     async getApiStatistics(operatorId?: string, startDate?: string, endDate?: string) {
         const matchQuery: any = {};
-        if (operatorId) matchQuery.operatorId = operatorId;
+        if (operatorId) {
+            matchQuery.operatorId = operatorId;
+        }
         if (startDate || endDate) {
             matchQuery.logTimeStamp = {};
-            if (startDate) matchQuery.logTimeStamp.$gte = startDate;
-            if (endDate) matchQuery.logTimeStamp.$lte = endDate;
+            if (startDate) {
+                matchQuery.logTimeStamp.$gte = startDate;
+            }
+            if (endDate) {
+                matchQuery.logTimeStamp.$lte = endDate;
+            }
         }
 
         const stats = await this.apiLogModel.aggregate([
@@ -275,25 +281,39 @@ export class ApiLogService {
     }
 
     private extractErrorCode(error: any): number {
-        if (error.response?.data?.ErrorCode) return error.response.data.ErrorCode;
-        if (error.code) return parseInt(error.code) || -1;
+        if (error.response?.data?.ErrorCode) {
+            return error.response.data.ErrorCode;
+        }
+        if (error.code) {
+            return parseInt(error.code) || -1;
+        }
         return -1;
     }
 
     private extractErrorMessage(error: any): string {
-        if (error.response?.data?.ErrorMessage) return error.response.data.ErrorMessage;
-        if (error.message) return error.message;
+        if (error.response?.data?.ErrorMessage) {
+            return error.response.data.ErrorMessage;
+        }
+        if (error.message) {
+            return error.message;
+        }
         return 'Unknown error';
     }
 
     private extractErrorDescription(error: any): string {
-        if (error.response?.data?.ErrorDescription) return error.response.data.ErrorDescription;
+        if (error.response?.data?.ErrorDescription) {
+            return error.response.data.ErrorDescription;
+        }
         return null;
     }
 
     private extractHttpStatus(error: any): string {
-        if (error.response?.status) return error.response.status.toString();
-        if (error.status) return error.status.toString();
+        if (error.response?.status) {
+            return error.response.status.toString();
+        }
+        if (error.status) {
+            return error.status.toString();
+        }
         return 'Unknown';
     }
 }
