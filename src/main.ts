@@ -4,6 +4,7 @@ import { Logger } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { ConfigLoaderService } from './config/config-loader.service';
+import { DatabaseConnectionService } from './database/database-connection.service';
 
 // Load configuration from JSON file
 const configLoader = new ConfigLoaderService();
@@ -47,6 +48,25 @@ async function bootstrap() {
     console.log('📦 Creating NestJS application...');
     logger.log('📦 Creating NestJS application...');
     const app = await NestFactory.create(AppModule);
+
+    // Wait a moment for database connection to establish
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Check database connection status
+    try {
+        const databaseConnectionService = app.get(DatabaseConnectionService);
+        const dbStatus = databaseConnectionService.getConnectionStatus();
+        if (dbStatus.isConnected) {
+            console.log('✅ Database connection verified');
+            logger.log('✅ Database connection verified');
+        } else {
+            console.log('⚠️ Database connection not ready');
+            logger.warn('⚠️ Database connection not ready');
+        }
+    } catch (error) {
+        console.log('⚠️ Could not verify database connection status');
+        logger.warn('⚠️ Could not verify database connection status');
+    }
 
     // Enable CORS if needed
     app.enableCors();

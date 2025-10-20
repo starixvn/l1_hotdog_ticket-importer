@@ -12,6 +12,7 @@ export default () => {
 
         database: {
             uri: config.database.uri,
+            name: config.database.name,
         },
 
         api: {

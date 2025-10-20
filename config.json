@@ -1,7 +1,7 @@
 {
     "database": {
-        "uri": "mongodb://localhost:27017",
-        "name": "ticket_importer"
+        "uri": "mongodb://hotdog_backend:HotdogBackend@10.10.50.12:39400,10.10.50.13:39400,10.10.50.14:39400/?replicaSet=SPLocal0",
+        "name": "hotdog_minigame"
     },
     "api": {
         "baseUrl": "https://owapi1.playonesit.com:7062",
