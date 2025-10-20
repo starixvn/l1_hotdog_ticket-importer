@@ -14,8 +14,8 @@ import { ApiLogController } from './api-log.controller';
         MongooseModule.forFeature([
             { name: TicketSilo.name, schema: TicketSiloSchema },
             { name: ProcessedBatch.name, schema: ProcessedBatchSchema },
-            { name: ApiLog.name, schema: ApiLogSchema },
         ]),
+        MongooseModule.forFeature([{ name: ApiLog.name, schema: ApiLogSchema }], 'log'),
     ],
     controllers: [DatabaseSwitchController, ApiLogController],
     providers: [DatabaseConnectionService, DynamicDatabaseService, ApiLogService],

@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose';
 
 export type ApiLogDocument = ApiLog & Document;
 
-@Schema({ collection: 'api_logs' })
+@Schema({ collection: 'import_requests' })
 export class ApiLog {
     @Prop({ required: true })
     operatorId: string;

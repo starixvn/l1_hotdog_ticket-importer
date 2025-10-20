@@ -53,7 +53,7 @@ function constructMongoUri(baseUri: string, dbName: string): string {
         MongooseModule.forRootAsync({
             useFactory: (configService: ConfigService) => {
                 const baseUri = configService.get<string>('database.uri');
-                const dbName = configService.get<string>('database.name');
+                const dbName = configService.get<string>('database.maindb');
 
                 const finalUri = constructMongoUri(baseUri, dbName);
 
@@ -67,6 +67,32 @@ function constructMongoUri(baseUri: string, dbName: string): string {
                     retryWrites: true,
                     w: 'majority',
                     maxPoolSize: 10,
+                    serverSelectionTimeoutMS: 5000,
+                    socketTimeoutMS: 45000,
+                    connectTimeoutMS: 10000,
+                };
+            },
+            inject: [ConfigService],
+        }),
+        // Log database connection
+        MongooseModule.forRootAsync({
+            connectionName: 'log',
+            useFactory: (configService: ConfigService) => {
+                const baseUri = configService.get<string>('database.uri');
+                const logDbName = configService.get<string>('database.log') || 'log';
+
+                const finalUri = constructMongoUri(baseUri, logDbName);
+
+                console.log('📝 Connecting to log MongoDB database...');
+                console.log(`   Base URI: ${baseUri}`);
+                console.log(`   Database: ${logDbName}`);
+                console.log(`   Final URI: ${finalUri}`);
+
+                return {
+                    uri: finalUri,
+                    retryWrites: true,
+                    w: 'majority',
+                    maxPoolSize: 5,
                     serverSelectionTimeoutMS: 5000,
                     socketTimeoutMS: 45000,
                     connectTimeoutMS: 10000,

@@ -1,7 +1,8 @@
 {
     "database": {
         "uri": "mongodb://hotdog_backend:HotdogBackend@10.10.50.12:39400,10.10.50.13:39400,10.10.50.14:39400/?replicaSet=SPLocal0",
-        "name": "hotdog_minigame"
+        "maindb": "hotdog_minigame",
+        "log": "hotdog_log"
     },
     "api": {
         "baseUrl": "https://boapi.sb3rd.playonesit.com",

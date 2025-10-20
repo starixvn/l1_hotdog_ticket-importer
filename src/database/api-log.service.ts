@@ -40,7 +40,7 @@ export class ApiLogService {
     private readonly logger = new Logger(ApiLogService.name);
 
     constructor(
-        @InjectModel(ApiLog.name) private readonly apiLogModel: Model<ApiLogDocument>,
+        @InjectModel(ApiLog.name, 'log') private readonly apiLogModel: Model<ApiLogDocument>,
         private readonly configService: ConfigService,
     ) {}
 

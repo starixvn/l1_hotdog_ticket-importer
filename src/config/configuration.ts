@@ -12,7 +12,8 @@ export default () => {
 
         database: {
             uri: config.database.uri,
-            name: config.database.name,
+            maindb: config.database.maindb,
+            log: config.database.log || 'log',
         },
 
         api: {

@@ -5,7 +5,8 @@ import * as path from 'path';
 export interface AppConfig {
     database: {
         uri: string;
-        name: string;
+        maindb: string;
+        log?: string;
     };
     api: {
         baseUrl: string;
@@ -74,7 +75,8 @@ export class ConfigLoaderService {
         return {
             database: {
                 uri: 'mongodb://localhost:27017',
-                name: 'ticket_importer',
+                maindb: 'hotdog_minigame',
+                log: 'log',
             },
             api: {
                 baseUrl: 'https://api.example.com',

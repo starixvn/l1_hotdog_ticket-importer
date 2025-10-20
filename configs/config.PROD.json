@@ -1,7 +1,8 @@
 {
     "database": {
         "uri": "mongodb://hotdog_backend:%3FD%60XWko0ZI99Y2PQ%5Eu%2E9LV%2BYv%2Emj6rhH@10.146.34.26:39510,10.146.34.27:39510,10.146.34.30:39510,10.146.34.28:39510/?replicaSet=SP-Main",
-        "name": "hotdog_minigame"
+        "maindb": "hotdog_minigame",
+        "log": "hotdog_log"
     },
     "api": {
         "baseUrl": "https://owapi1.playonesit.com:7062",
