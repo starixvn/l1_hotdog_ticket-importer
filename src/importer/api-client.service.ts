@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import * as crypto from 'crypto';
 import { TransformedTicket } from './data-transformer.service';
 import { SentryService } from '../common/services/sentry.service';
+import { ApiLogService } from '../database/api-log.service';
 
 export interface ApiRequest {
     Timestamp: string;
@@ -39,6 +40,7 @@ export class ApiClientService {
         private readonly httpService: HttpService,
         private readonly configService: ConfigService,
         private readonly sentryService: SentryService,
+        private readonly apiLogService: ApiLogService,
     ) {
         this.baseUrl = this.configService.get<string>('api.baseUrl', 'https://api.example.com');
         this.operatorPwd = this.configService.get<string>('api.operatorPwd', '');
@@ -60,21 +62,41 @@ export class ApiClientService {
     }
 
     private async sendWithRetry(request: ApiRequest, attempt = 1): Promise<void> {
+        const requestTimestamp = request.Timestamp;
+        let responseTimestamp: string;
+
         try {
             this.logAttempt(request, attempt);
             this.addSentryBreadcrumb(request, attempt);
 
             const response = await this.makeRequest(request);
+            responseTimestamp = new Date().toISOString();
 
             if (response.ErrorCode === 0) {
                 this.logger.log(`Successfully sent tickets: ${response.ErrorMessage}`);
+
+                // Log successful request
+                await this.apiLogService.logSuccessRequest(request.Seq, requestTimestamp, responseTimestamp, request, response, {
+                    attempt: attempt,
+                    maxRetryAttempts: this.maxRetryAttempts,
+                    baseUrl: this.baseUrl,
+                });
+
                 return;
             } else {
                 throw this.createApiError(response, request, attempt);
             }
         } catch (error) {
+            responseTimestamp = new Date().toISOString();
             this.logger.error(`Attempt ${attempt} failed:`, error);
             this.captureSentryError(error, request, attempt);
+
+            // Log failed request
+            await this.apiLogService.logFailedRequest(request.Seq, requestTimestamp, responseTimestamp, request, error, {
+                attempt: attempt,
+                maxRetryAttempts: this.maxRetryAttempts,
+                baseUrl: this.baseUrl,
+            });
 
             if (attempt >= this.maxRetryAttempts) {
                 this.handleMaxRetryReached(request, attempt);

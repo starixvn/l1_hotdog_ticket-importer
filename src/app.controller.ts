@@ -25,6 +25,8 @@ export class AppController {
                 databaseSwitch: '/database/switch/{dbName}',
                 databaseCollections: '/database/collections/{dbName}',
                 databaseQuery: '/database/query/{dbName}/{collectionName}',
+                apiLogs: '/api-logs',
+                apiLogsStats: '/api-logs/statistics',
             },
         };
     }
