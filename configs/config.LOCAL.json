@@ -10,7 +10,7 @@
         "operatorKey": "cem0g25u"
     },
     "importer": {
-        "batchSize": 50,
+        "batchSize": 10,
         "requestDelayMs": 12000,
         "maxRetryAttempts": 1,
         "retryBaseDelayMs": 1000,
