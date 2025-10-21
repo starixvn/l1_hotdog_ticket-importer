@@ -84,7 +84,7 @@ export class TicketService {
         // Define constant for repeated literal
         const SUB_ROUND_ID_FIELD = '$subRoundId';
 
-        return await this.ticketSiloModel
+        return this.ticketSiloModel
             .find({
                 time: {
                     $gt: lastProcessed,
