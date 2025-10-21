@@ -215,7 +215,7 @@ export class ApiClientService {
         return firstValueFrom(
             this.httpService.post(apiEndpoint, body, {
                 headers,
-                timeout: 30000, // 30 second timeout
+                timeout: 60000, // 60 second timeout
             }),
         );
     }
