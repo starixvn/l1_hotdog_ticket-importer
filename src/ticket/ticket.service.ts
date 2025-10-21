@@ -44,6 +44,9 @@ export class TicketService {
                 `Querying tickets from ${lastProcessed} to ${endTime} for operatorId: ${operatorId}, excluding ${processedTicketIds.length} already processed tickets`,
             );
 
+            // Define constant for repeated literal
+            const SUB_ROUND_ID_FIELD = '$subRoundId';
+
             const tickets = await this.ticketSiloModel
                 .find({
                     time: {
@@ -64,9 +67,9 @@ export class TicketService {
                                         {
                                             $cond: {
                                                 if: {
-                                                    $and: [{ $ne: ['$subRoundId', '$roundId'] }, { $gt: ['$subRoundId', 0] }],
+                                                    $and: [{ $ne: [SUB_ROUND_ID_FIELD, '$roundId'] }, { $gt: [SUB_ROUND_ID_FIELD, 0] }],
                                                 },
-                                                then: { $toString: '$subRoundId' },
+                                                then: { $toString: SUB_ROUND_ID_FIELD },
                                                 else: { $toString: '$roundId' },
                                             },
                                         },
