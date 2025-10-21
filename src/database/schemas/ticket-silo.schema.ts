@@ -26,9 +26,6 @@ export class TicketSilo {
     @Prop({ default: 0 })
     isTest: number;
 
-    @Prop({ type: Types.ObjectId })
-    _roundId: Types.ObjectId;
-
     @Prop({ type: Date })
     time: Date;
 

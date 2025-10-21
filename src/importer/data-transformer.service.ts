@@ -6,6 +6,7 @@ export interface InputTicket {
     gameId: number;
     playerId: string;
     roundId: number;
+    subRoundId: number;
     time: string | Date;
     roundTime: string | Date;
     stake: number;
@@ -48,11 +49,15 @@ export class DataTransformerService {
         const stakeAmount = this.roundToFourDecimals(ticket.stake || 0);
         const payoutAmount = this.roundToFourDecimals(ticket.payout || 0);
 
+        // Use subRoundId if it's different from roundId and subRoundId > 0
+        const gameRoundId =
+            ticket.subRoundId !== ticket.roundId && ticket.subRoundId > 0 ? ticket.subRoundId.toString() : ticket.roundId.toString();
+
         return {
             GameId: ticket.gameId.toString(),
             CustId: ticket.playerId,
             CustName: ticket.playerId, // Using playerId as name since CustName is not available
-            GameRoundId: ticket.roundId.toString(),
+            GameRoundId: gameRoundId,
             TransDate: this.formatDate(ticket.roundTime),
             SettleDate: this.formatDate(ticket.roundTime),
             Stake: stakeAmount,

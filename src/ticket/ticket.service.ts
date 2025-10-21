@@ -55,7 +55,23 @@ export class TicketService {
                     $expr: {
                         $not: {
                             $in: [
-                                { $concat: ['$playerId', '_', { $toString: '$gameId' }, '_', { $toString: '$roundId' }] },
+                                {
+                                    $concat: [
+                                        '$playerId',
+                                        '_',
+                                        { $toString: '$gameId' },
+                                        '_',
+                                        {
+                                            $cond: {
+                                                if: {
+                                                    $and: [{ $ne: ['$subRoundId', '$roundId'] }, { $gt: ['$subRoundId', 0] }],
+                                                },
+                                                then: { $toString: '$subRoundId' },
+                                                else: { $toString: '$roundId' },
+                                            },
+                                        },
+                                    ],
+                                },
                                 processedTicketIds,
                             ],
                         },
@@ -80,8 +96,11 @@ export class TicketService {
 
     async updateLastProcessed(time: Date, tickets: TicketSilo[]): Promise<void> {
         try {
-            // Generate ticket IDs for this batch
-            const ticketIds = tickets.map((ticket) => `${ticket.playerId}_${ticket.gameId}_${ticket.roundId}`);
+            // Generate ticket IDs for this batch using the same logic as data transformer
+            const ticketIds = tickets.map((ticket) => {
+                const gameRoundId = ticket.subRoundId !== ticket.roundId && ticket.subRoundId > 0 ? ticket.subRoundId : ticket.roundId;
+                return `${ticket.playerId}_${ticket.gameId}_${gameRoundId}`;
+            });
 
             // Create a processed batch record
             const batchId = `batch_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
