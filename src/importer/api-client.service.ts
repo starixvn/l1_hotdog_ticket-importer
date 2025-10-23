@@ -23,7 +23,7 @@ export interface ApiResponse {
     Timestamp: string;
     Seq: string;
     ErrorCode: number;
-    ErrorMessage: string;
+    ErrorMsg: string;
 }
 
 @Injectable()
@@ -73,7 +73,7 @@ export class ApiClientService {
             responseTimestamp = new Date().toISOString();
 
             if (response.ErrorCode === 0) {
-                this.logger.log(`Successfully sent tickets: ${response.ErrorMessage}`);
+                this.logger.log(`Successfully sent tickets: ${response.ErrorMsg}`);
 
                 // Log successful request
                 await this.apiLogService.logSuccessRequest(request.Seq, requestTimestamp, responseTimestamp, request, response, {
@@ -145,11 +145,11 @@ export class ApiClientService {
 
     private createApiError(response: ApiResponse, request: ApiRequest, attempt: number): Error {
         const errorDetails = this.createBaseErrorDetails(request, attempt);
-        errorDetails.message = response.ErrorMessage;
+        errorDetails.message = response.ErrorMsg;
         errorDetails.code = response.ErrorCode;
 
         return new Error(
-            `API Error: ${response.ErrorMessage} (Code: ${response.ErrorCode}) - Request Details: ${JSON.stringify(errorDetails)}`,
+            `API Error: ${response.ErrorMsg} (Code: ${response.ErrorCode}) - Request Details: ${JSON.stringify(errorDetails)}`,
         );
     }
 
