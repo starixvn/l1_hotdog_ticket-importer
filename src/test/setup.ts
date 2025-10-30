@@ -161,7 +161,7 @@ export const mockApiResponse = {
     Timestamp: TEST_DATE,
     Seq: '12345',
     ErrorCode: 0,
-    ErrorMessage: 'Success',
+    ErrorMsg: 'Success',
 };
 
 export const mockProcessedBatch = {

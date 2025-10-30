@@ -132,7 +132,7 @@ app.post('/api/OperatorApi/ImportExtTicket', (req, res) => {
         Timestamp: timestamp,
         Seq: req.body.Seq,
         ErrorCode: 0,
-        ErrorMessage: 'Success',
+        ErrorMsg: 'Success',
     });
 });
 

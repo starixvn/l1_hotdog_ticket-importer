@@ -84,7 +84,7 @@ export class DataTransformerService {
     }
 
     private formatDate(date: string | Date): string {
-        return moment(date).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+        return moment(date).utcOffset(-4).format('YYYY-MM-DDTHH:mm:ss.SSS');
     }
 
     private mapCurrencyToISO(currency: string): string {

@@ -69,7 +69,7 @@ export class ApiLogService {
                 result: {
                     seq: seq,
                     errorCode: apiResponse.ErrorCode || 0,
-                    errorMessage: apiResponse.ErrorMessage || null,
+                    errorMessage: apiResponse.ErrorMsg || null,
                     errorDescription: apiResponse.ErrorDescription || null,
                 },
                 status: 'success',
