@@ -56,9 +56,4 @@ export class ApiLog {
 
 export const ApiLogSchema = SchemaFactory.createForClass(ApiLog);
 
-// Create indexes for better query performance
-ApiLogSchema.index({ logTimeStamp: -1 });
-ApiLogSchema.index({ operatorId: 1, logTimeStamp: -1 });
-ApiLogSchema.index({ 'call.seq': 1 });
-ApiLogSchema.index({ 'result.errorCode': 1, logTimeStamp: -1 });
-ApiLogSchema.index({ status: 1, logTimeStamp: -1 });
+

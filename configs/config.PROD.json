@@ -5,15 +5,15 @@
         "log": "hotdog_log"
     },
     "api": {
-        "baseUrl": "https://owapi1.playonesit.com:7062",
+        "baseUrl": "http://gaming-bo-api-t2.3rd-party.klt2p.gamora.prod:32280",
         "operatorPwd": "rmt727hm",
         "operatorKey": "cem0g25u"
     },
     "importer": {
         "batchSize": 50,
-        "requestDelayMs": 12000,
-        "maxRetryAttempts": 1,
-        "retryBaseDelayMs": 1000,
+        "requestDelayMs": 15000,
+        "maxRetryAttempts": 3,
+        "retryBaseDelayMs": 2000,
         "operatorId": "SabaPlay_HD"
     },
     "application": {
@@ -22,8 +22,8 @@
         "logLevel": "info"
     },
     "sentry": {
-        "dsn": "https://3ea51abd00a0a16052891854006c17f6@sentry-k8s.lumigame.com/16",
-        "environment": "development",
+        "dsn": "http://e5b9a042dabdd1012ed0000ab73cf80d@sentrypro-sc.ops-klprod.gamora.prod/23",
+        "environment": "PROD",
         "release": "1.0.0"
     }
 }
