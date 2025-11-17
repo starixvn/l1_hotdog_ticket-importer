@@ -17,7 +17,7 @@ export class ImporterService {
     ) {}
 
     // Run every 5 minutes
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron(CronExpression.EVERY_30_MINUTES)
     async processTickets(): Promise<void> {
         this.logger.log('Starting ticket import process...');
 

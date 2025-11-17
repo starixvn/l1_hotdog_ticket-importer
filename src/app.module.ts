@@ -58,9 +58,7 @@ function constructMongoUri(baseUri: string, dbName: string): string {
                 const finalUri = constructMongoUri(baseUri, dbName);
 
                 console.log('🔌 Connecting to primary MongoDB database...');
-                console.log(`   Base URI: ${baseUri}`);
                 console.log(`   Database: ${dbName}`);
-                console.log(`   Final URI: ${finalUri}`);
 
                 return {
                     uri: finalUri,
@@ -84,9 +82,7 @@ function constructMongoUri(baseUri: string, dbName: string): string {
                 const finalUri = constructMongoUri(baseUri, logDbName);
 
                 console.log('📝 Connecting to log MongoDB database...');
-                console.log(`   Base URI: ${baseUri}`);
                 console.log(`   Database: ${logDbName}`);
-                console.log(`   Final URI: ${finalUri}`);
 
                 return {
                     uri: finalUri,

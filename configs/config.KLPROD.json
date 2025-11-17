@@ -10,10 +10,10 @@
         "operatorKey": "cem0g25u"
     },
     "importer": {
-        "batchSize": 50,
+        "batchSize": 95,
         "requestDelayMs": 15000,
-        "maxRetryAttempts": 3,
-        "retryBaseDelayMs": 2000,
+        "maxRetryAttempts": 5,
+        "retryBaseDelayMs": 5000,
         "operatorId": "SabaPlay_HD"
     },
     "application": {
